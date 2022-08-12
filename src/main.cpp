@@ -12,7 +12,7 @@
 /*
   JC Servaye 
   added websocket access
-  added auto pairing 
+  added auto pairing test
 */
 
 #include <esp_now.h>
