@@ -11,6 +11,7 @@
 
 /*
   JC Servaye 
+  Complete project details at https://github.com/Servayejc/esp_now_web_server/
   added websocket access
   added auto pairing test
 */
