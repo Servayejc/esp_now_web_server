@@ -14,6 +14,23 @@
   Complete project details at https://github.com/Servayejc/esp_now_web_server/
   added websocket access
   added auto pairing test
+
+  ESP32 in WIFI_AP_STA mode respond whith his WiFi.macAddress but it uses WiFi.softAPmacAddress to receive from ESP8266 peer.
+  example : 
+      1.- The peer send a message to the server with address ff:ff:ff:ff:ff:ff 
+      2.- The server receive the message and the address of the peer.
+      3.- The server add the address of the peer to his peer list. 
+      4.- The server reply to the peer whith the received address. 
+      5.- The peer receive the message and the WiFi.macAddress of the server.
+      6.- The peer add the received address of the server to his peer list.
+      7.- The peer try to send a message to the server address but it fail to transmit !!!
+      8.- The peer add the WiFi.softAPmacAddress of the server to his peer list.
+      9.- The peer send a message to the server WiFi.softAPmacAddress... 
+      10.- The server receive the message from the peer!
+  
+  Don't trust the macAddress in the OnDataRecv(...) callback if the message is received 
+  from an ESP in WIFI_AP_STA mode.  
+  
 */
 
 #include <esp_now.h>
@@ -24,6 +41,7 @@
 #include <ESPmDNS.h>
 
 int send = 0;
+int led = 0;
 
 uint8_t broadcastAddress[] =  {0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};
 
@@ -37,20 +55,26 @@ int chan = 11;  //
 // Structure example to receive data
 // Must match the sender structure
 typedef struct struct_message {
-  int id;
+  uint8_t msgType;
+  uint8_t id;
   float temp;
   float hum;
   unsigned int readingId;
 } struct_message;
 
 typedef struct struct_pairing {       // new structure for pairing
-    int id;
-    int channel;
+    uint8_t msgType;
+    uint8_t id;
+    uint8_t macAddr[6];
+    uint8_t channel;
 } struct_pairing;
+
+ 
 
 struct_message incomingReadings;
 struct_message outgoingSetpoints;
 struct_pairing pairingData;
+
 
 //JSONVar board;
 //JSONVar ws_json;
@@ -59,83 +83,8 @@ AsyncWebServer server(80);
 AsyncEventSource events("/events");
 AsyncWebSocket ws("/ws");
 
-bool manageSlave(const uint8_t *peer_addr) {      // add pairing
-  memset(&slave, 0, sizeof(slave));
-  const esp_now_peer_info_t *peer = &slave;
-	//const uint8_t *peer_addr = slave.peer_addr;
-  memcpy(slave.peer_addr, peer_addr, 6);
-	slave.channel = chan; // pick a channel
-  slave.encrypt = 0; // no encryption
-  // check if the peer exists
-  bool exists = esp_now_is_peer_exist(slave.peer_addr);
-  if (exists) {
-    // Slave already paired.
-    Serial.println("Already Paired");
-    return true;
-  }
-  else {
-    esp_err_t addStatus = esp_now_add_peer(peer);
-    if (addStatus == ESP_OK) {
-      // Pair success
-      Serial.println("Pair success");
-      return true;
-    }
-    else 
-    {
-      Serial.println("Pair failed");
-      return false;
-    }
-  }
-} 
 
-void printMAC(const uint8_t * mac_addr){
-  char macStr[18];
-  Serial.print("Packet received from: ");
-  snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x",
-           mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
-  Serial.print(macStr);
-}
 
-// callback when data is sent
-void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
-  Serial.print("\r\nLast Packet Send Status:\t");
-  Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
-}
-
-// callback function that will be executed when data is received from ESPNOW
-void OnDataRecv(const uint8_t * mac_addr, const uint8_t *incomingData, int len) { 
-  printMAC(mac_addr);
-  Serial.println();
-  Serial.print("data size = ");
-  Serial.println(len);
-  manageSlave(mac_addr);
-  if (len == sizeof(incomingReadings)){
-    memcpy(&incomingReadings, incomingData, sizeof(incomingReadings));
-    // create a JSON document with received data and send it by event to the web page
-    StaticJsonDocument<1000> root;
-    root["id"] = incomingReadings.id;
-    root["temperature"] = incomingReadings.temp;
-    root["humidity"] = incomingReadings.hum;
-    root["readingId"] = String(incomingReadings.readingId);
-    String payload;
-    serializeJson(root, payload);
-    
-    Serial.println("event send :");
-    serializeJson(root, Serial);
-    events.send(payload.c_str(), "new_readings", millis());
-    Serial.print("-- end of event --");
-  }
-  if (len == sizeof(pairingData)){                // new code for pairing
-    Serial.println("Pairing request");
-    Serial.println(pairingData.id);
-    //if (pairingData.id > 0) {
-      pairingData.id = 0;
-      pairingData.channel = chan;
-      Serial.println("send response");
-      esp_err_t result = esp_now_send(mac_addr, (uint8_t *) &pairingData, sizeof(pairingData));
-   // }   
-  }
-}
 
 const char index_html[] PROGMEM = R"rawliteral(
 <!DOCTYPE HTML><html>
@@ -255,6 +204,92 @@ void onSocketEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEven
   }
 }
 
+// ---------------------------- esp_ now -------------------------
+void printMAC(const uint8_t * mac_addr){
+  char macStr[18];
+  snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x",
+           mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
+  Serial.print(macStr);
+}
+
+bool addPeer(const uint8_t *peer_addr) {      // add pairing
+  memset(&slave, 0, sizeof(slave));
+  const esp_now_peer_info_t *peer = &slave;
+	memcpy(slave.peer_addr, peer_addr, 6);
+  
+	slave.channel = chan; // pick a channel
+  slave.encrypt = 0; // no encryption
+  // check if the peer exists
+  bool exists = esp_now_is_peer_exist(slave.peer_addr);
+  if (exists) {
+    // Slave already paired.
+    Serial.println("Already Paired");
+    return true;
+  }
+  else {
+    esp_err_t addStatus = esp_now_add_peer(peer);
+    if (addStatus == ESP_OK) {
+      // Pair success
+      Serial.println("Pair success");
+      return true;
+    }
+    else 
+    {
+      Serial.println("Pair failed");
+      return false;
+    }
+  }
+} 
+
+// callback when data is sent
+void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
+  Serial.print("Last Packet Send Status: ");
+  Serial.print(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success to " : "Delivery Fail to ");
+  printMAC(mac_addr);
+  Serial.println();
+}
+
+
+
+
+void OnDataRecv(const uint8_t * mac_addr, const uint8_t *incomingData, int len) { 
+  if (len == sizeof(incomingReadings)){
+    Serial.print(len);
+    Serial.print(" bytes of data received from : ");
+    printMAC(mac_addr);
+    Serial.println();
+    memcpy(&incomingReadings, incomingData, sizeof(incomingReadings));
+    // create a JSON document with received data and send it by event to the web page
+    StaticJsonDocument<1000> root;
+    root["id"] = incomingReadings.id;
+    root["temperature"] = incomingReadings.temp;
+    root["humidity"] = incomingReadings.hum;
+    root["readingId"] = String(incomingReadings.readingId);
+    String payload;
+    serializeJson(root, payload);
+    
+    Serial.print("event send :");
+    serializeJson(root, Serial);
+    events.send(payload.c_str(), "new_readings", millis());
+    Serial.println();
+  }
+  if (len == sizeof(pairingData)){                // new code for pairing
+    memcpy(&pairingData, incomingData, sizeof(pairingData));
+    Serial.print("Pairing request from: ");
+    printMAC(mac_addr);
+    Serial.println();
+    if (pairingData.id > 0) { 
+      pairingData.id = 0;  // 0 is server
+      // Server is in AP_STA mode: peers need to send data to server soft AP MAC address 
+      WiFi.softAPmacAddress(pairingData.macAddr);   
+      pairingData.channel = chan;
+      Serial.println("send response");
+      esp_err_t result = esp_now_send(mac_addr, (uint8_t *) &pairingData, sizeof(pairingData));
+    }  
+    addPeer(mac_addr); 
+  }
+}
+
 void initESP_NOW(){
     // Init ESP-NOW
     if (esp_now_init() != ESP_OK) {
@@ -263,19 +298,7 @@ void initESP_NOW(){
     }
     esp_now_register_send_cb(OnDataSent);
     esp_now_register_recv_cb(OnDataRecv);
-    
-    // add peer info for broadcast
-    esp_now_peer_info_t peer;
-    memset(&peer, 0, sizeof(esp_now_peer_info_t));
-    memcpy(peer.peer_addr, broadcastAddress, 6);
-    peer.channel = chan;
-    //peer.encrypt = false;
-    if (esp_now_add_peer(&peer) != ESP_OK){
-      Serial.println("Failed to add peer");
-      return;
-    }
-  }
-
+} 
 
 void setup() {
   // Initialize Serial Monitor
@@ -285,8 +308,12 @@ void setup() {
   Serial.print("Server MAC Address:  ");
   Serial.println(WiFi.macAddress());
 
+ 
+
   // Set the device as a Station and Soft Access Point simultaneously
   WiFi.mode(WIFI_AP_STA);
+
+
   
   // Set device as a Wi-Fi Station
   WiFi.begin(ssid, password);
@@ -295,6 +322,8 @@ void setup() {
     Serial.println("Setting as a Wi-Fi Station..");
   }
 
+  Serial.print("Server SOFT AP MAC Address:  ");
+  Serial.println(WiFi.softAPmacAddress());
 
   chan = WiFi.channel();
   Serial.print("Station IP Address: ");
@@ -304,10 +333,11 @@ void setup() {
 
   initESP_NOW();
   
+  // Start Web server
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
     request->send_P(200, "text/html", index_html);
   });
-
+  // Web sockets  
   server.addHandler(&ws);
   
   // Events 
@@ -325,7 +355,8 @@ void setup() {
   // start server
   server.begin();
 
-while(!MDNS.begin("Server")) {
+  // Start MDNS (bonjour)
+  while(!MDNS.begin("Server")) {
       Serial.println("Starting mDNS...");
       delay(1000);
   }
@@ -334,21 +365,30 @@ while(!MDNS.begin("Server")) {
 
   Serial.println("-----");
   WiFi.printDiag(Serial);
+  Serial.println("-----");
 }
- 
+
+
+
+
 void loop() {
   static unsigned long lastEventTime = millis();
   static const unsigned long EVENT_INTERVAL_MS = 5000;
   if ((millis() - lastEventTime) > EVENT_INTERVAL_MS) {
     events.send("ping",NULL,millis());
     lastEventTime = millis();
-  }
-
-  if (send == 1) {
-    Serial.print("data size in loop = ");
-    Serial.println(sizeof(outgoingSetpoints));
-    esp_now_send(broadcastAddress, (uint8_t *) &outgoingSetpoints, sizeof(outgoingSetpoints));
-    send = 0;
+  
+    send = 1;
+    if (send == 1) {
+      outgoingSetpoints.id = 0;
+      outgoingSetpoints.temp = 66;
+      outgoingSetpoints.hum = 18;
+      outgoingSetpoints.readingId = led++;
+     
+      //esp_now_send(broadcastAddress, (uint8_t *) &outgoingSetpoints, sizeof(outgoingSetpoints));
+      esp_now_send(NULL, (uint8_t *) &outgoingSetpoints, sizeof(outgoingSetpoints));
+      send = 0;
+    }
   }
  }
 
