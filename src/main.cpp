@@ -52,6 +52,9 @@ const char* password = "3FEADCOGECO";
 esp_now_peer_info_t slave;
 int chan = 11;  // 
 
+enum MessageType {PAIRING, DATA,};
+MessageType messageType;
+
 // Structure example to receive data
 // Must match the sender structure
 typedef struct struct_message {
@@ -249,31 +252,32 @@ void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
   Serial.println();
 }
 
-
-
-
 void OnDataRecv(const uint8_t * mac_addr, const uint8_t *incomingData, int len) { 
-  if (len == sizeof(incomingReadings)){
-    Serial.print(len);
-    Serial.print(" bytes of data received from : ");
-    printMAC(mac_addr);
-    Serial.println();
+  Serial.print(len);
+  Serial.print(" bytes of data received from : ");
+  printMAC(mac_addr);
+  Serial.println();
+  StaticJsonDocument<1000> root;
+  String payload;
+  uint8_t type = incomingData[0];
+  switch (type) {
+  case DATA : 
     memcpy(&incomingReadings, incomingData, sizeof(incomingReadings));
     // create a JSON document with received data and send it by event to the web page
-    StaticJsonDocument<1000> root;
+    
     root["id"] = incomingReadings.id;
     root["temperature"] = incomingReadings.temp;
     root["humidity"] = incomingReadings.hum;
     root["readingId"] = String(incomingReadings.readingId);
-    String payload;
-    serializeJson(root, payload);
     
+    serializeJson(root, payload);
     Serial.print("event send :");
     serializeJson(root, Serial);
     events.send(payload.c_str(), "new_readings", millis());
     Serial.println();
-  }
-  if (len == sizeof(pairingData)){                // new code for pairing
+    break;
+  
+  case PAIRING:
     memcpy(&pairingData, incomingData, sizeof(pairingData));
     Serial.print("Pairing request from: ");
     printMAC(mac_addr);
@@ -285,8 +289,9 @@ void OnDataRecv(const uint8_t * mac_addr, const uint8_t *incomingData, int len) 
       pairingData.channel = chan;
       Serial.println("send response");
       esp_err_t result = esp_now_send(mac_addr, (uint8_t *) &pairingData, sizeof(pairingData));
+      addPeer(mac_addr);
     }  
-    addPeer(mac_addr); 
+    break; 
   }
 }
 
@@ -308,13 +313,8 @@ void setup() {
   Serial.print("Server MAC Address:  ");
   Serial.println(WiFi.macAddress());
 
- 
-
   // Set the device as a Station and Soft Access Point simultaneously
   WiFi.mode(WIFI_AP_STA);
-
-
-  
   // Set device as a Wi-Fi Station
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
@@ -367,9 +367,6 @@ void setup() {
   WiFi.printDiag(Serial);
   Serial.println("-----");
 }
-
-
-
 
 void loop() {
   static unsigned long lastEventTime = millis();
