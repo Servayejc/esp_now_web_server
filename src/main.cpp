@@ -72,22 +72,13 @@ typedef struct struct_pairing {       // new structure for pairing
     uint8_t channel;
 } struct_pairing;
 
- 
-
 struct_message incomingReadings;
 struct_message outgoingSetpoints;
 struct_pairing pairingData;
 
-
-//JSONVar board;
-//JSONVar ws_json;
-
 AsyncWebServer server(80);
 AsyncEventSource events("/events");
 AsyncWebSocket ws("/ws");
-
-
-
 
 const char index_html[] PROGMEM = R"rawliteral(
 <!DOCTYPE HTML><html>
@@ -168,6 +159,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len, int clientID) 
       //  parseJson(data, clientID);
       StaticJsonDocument<2000> root;
       auto error  = deserializeJson(root, data);
+      outgoingSetpoints.msgType = DATA;
       outgoingSetpoints.id = root["id"];
       outgoingSetpoints.temp = root["temp"];
       outgoingSetpoints.hum = root["hum"];
@@ -282,7 +274,11 @@ void OnDataRecv(const uint8_t * mac_addr, const uint8_t *incomingData, int len) 
     Serial.print("Pairing request from: ");
     printMAC(mac_addr);
     Serial.println();
-    if (pairingData.id > 0) { 
+    Serial.println(pairingData.msgType);
+    Serial.println(pairingData.id);
+    Serial.println(pairingData.channel);
+    if (pairingData.msgType == PAIRING & pairingData.id > 0) { 
+      pairingData.msgType = PAIRING;
       pairingData.id = 0;  // 0 is server
       // Server is in AP_STA mode: peers need to send data to server soft AP MAC address 
       WiFi.softAPmacAddress(pairingData.macAddr);   
@@ -337,6 +333,7 @@ void setup() {
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
     request->send_P(200, "text/html", index_html);
   });
+  
   // Web sockets  
   server.addHandler(&ws);
   
@@ -377,12 +374,12 @@ void loop() {
   
     send = 1;
     if (send == 1) {
+      outgoingSetpoints.msgType = DATA;
       outgoingSetpoints.id = 0;
       outgoingSetpoints.temp = 66;
       outgoingSetpoints.hum = 18;
       outgoingSetpoints.readingId = led++;
      
-      //esp_now_send(broadcastAddress, (uint8_t *) &outgoingSetpoints, sizeof(outgoingSetpoints));
       esp_now_send(NULL, (uint8_t *) &outgoingSetpoints, sizeof(outgoingSetpoints));
       send = 0;
     }
