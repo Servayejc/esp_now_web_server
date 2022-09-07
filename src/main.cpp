@@ -12,24 +12,31 @@
 /*
   JC Servaye 
   Complete project details at https://github.com/Servayejc/esp_now_web_server/
-  added websocket access
-  added auto pairing test
+  Added websocket access
+  Added auto pairing
+  Allow bidirectionnal communication with peers 
 
   ESP32 in WIFI_AP_STA mode respond whith his WiFi.macAddress but it uses WiFi.softAPmacAddress to receive from ESP8266 peer.
-  example : 
+  Example : 
       1.- The peer send a message to the server with address ff:ff:ff:ff:ff:ff 
+      
       2.- The server receive the message and the address of the peer.
       3.- The server add the address of the peer to his peer list. 
       4.- The server reply to the peer whith the received address. 
+      
       5.- The peer receive the message and the WiFi.macAddress of the server.
       6.- The peer add the received address of the server to his peer list.
       7.- The peer try to send a message to the server address but it fail to transmit !!!
+      
       8.- The peer add the WiFi.softAPmacAddress of the server to his peer list.
       9.- The peer send a message to the server WiFi.softAPmacAddress... 
       10.- The server receive the message from the peer!
   
   Don't trust the macAddress in the OnDataRecv(...) callback if the message is received 
-  from an ESP in WIFI_AP_STA mode.  
+  from an ESP in WIFI_AP_STA mode. 
+
+  WiFi.softAPmacAddress is created from WiFi.macAddress by adding 1 to the last byte: 
+  https://docs.espressif.com/projects/esp-idf/en/v3.1.7/api-reference/system/base_mac_address.html
   
 */
 
@@ -199,6 +206,15 @@ void onSocketEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEven
   }
 }
 
+void readDataToSend() {
+  outgoingSetpoints.msgType = DATA;
+  outgoingSetpoints.id = 0;
+  outgoingSetpoints.temp = 66;
+  outgoingSetpoints.hum = 18;
+  outgoingSetpoints.readingId = led++;
+}
+
+
 // ---------------------------- esp_ now -------------------------
 void printMAC(const uint8_t * mac_addr){
   char macStr[18];
@@ -251,17 +267,15 @@ void OnDataRecv(const uint8_t * mac_addr, const uint8_t *incomingData, int len) 
   Serial.println();
   StaticJsonDocument<1000> root;
   String payload;
-  uint8_t type = incomingData[0];
+  uint8_t type = incomingData[0];       // first message byte is the type of message 
   switch (type) {
-  case DATA : 
+  case DATA :                           // the message is data type
     memcpy(&incomingReadings, incomingData, sizeof(incomingReadings));
     // create a JSON document with received data and send it by event to the web page
-    
     root["id"] = incomingReadings.id;
     root["temperature"] = incomingReadings.temp;
     root["humidity"] = incomingReadings.hum;
     root["readingId"] = String(incomingReadings.readingId);
-    
     serializeJson(root, payload);
     Serial.print("event send :");
     serializeJson(root, Serial);
@@ -269,23 +283,24 @@ void OnDataRecv(const uint8_t * mac_addr, const uint8_t *incomingData, int len) 
     Serial.println();
     break;
   
-  case PAIRING:
+  case PAIRING:                            // the message is a pairing request 
     memcpy(&pairingData, incomingData, sizeof(pairingData));
+    Serial.println(pairingData.msgType);
+    Serial.println(pairingData.id);
     Serial.print("Pairing request from: ");
     printMAC(mac_addr);
     Serial.println();
-    Serial.println(pairingData.msgType);
-    Serial.println(pairingData.id);
     Serial.println(pairingData.channel);
-    if (pairingData.msgType == PAIRING & pairingData.id > 0) { 
-      pairingData.msgType = PAIRING;
-      pairingData.id = 0;  // 0 is server
-      // Server is in AP_STA mode: peers need to send data to server soft AP MAC address 
-      WiFi.softAPmacAddress(pairingData.macAddr);   
-      pairingData.channel = chan;
-      Serial.println("send response");
-      esp_err_t result = esp_now_send(mac_addr, (uint8_t *) &pairingData, sizeof(pairingData));
-      addPeer(mac_addr);
+    if (pairingData.id > 0) {     // do not replay to server itself
+      if (pairingData.msgType == PAIRING) { 
+        pairingData.id = 0;       // 0 is server
+        // Server is in AP_STA mode: peers need to send data to server soft AP MAC address 
+        WiFi.softAPmacAddress(pairingData.macAddr);   
+        pairingData.channel = chan;
+        Serial.println("send response");
+        esp_err_t result = esp_now_send(mac_addr, (uint8_t *) &pairingData, sizeof(pairingData));
+        addPeer(mac_addr);
+      }  
     }  
     break; 
   }
@@ -371,19 +386,8 @@ void loop() {
   if ((millis() - lastEventTime) > EVENT_INTERVAL_MS) {
     events.send("ping",NULL,millis());
     lastEventTime = millis();
-  
-    send = 1;
-    if (send == 1) {
-      outgoingSetpoints.msgType = DATA;
-      outgoingSetpoints.id = 0;
-      outgoingSetpoints.temp = 66;
-      outgoingSetpoints.hum = 18;
-      outgoingSetpoints.readingId = led++;
-     
-      esp_now_send(NULL, (uint8_t *) &outgoingSetpoints, sizeof(outgoingSetpoints));
-      send = 0;
-    }
+    readDataToSend();
+    esp_now_send(NULL, (uint8_t *) &outgoingSetpoints, sizeof(outgoingSetpoints));
   }
- }
-
+}
 
