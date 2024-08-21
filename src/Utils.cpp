@@ -108,6 +108,37 @@ bool addPeerToESPNOW(const uint8_t *peer_addr)
   return true;
 }
 
+void testPeers(){
+    StaticJsonDocument<2000> root;
+    root["channel"] = WiFi.channel();
+    JsonArray peers = root.createNestedArray("Peers");
+    //Serial.println(Peers.size());
+    for (int i = 0; i < Peers.size(); i++)
+    {
+       //if (Peers[i].MAC[0] > 0) {
+        JsonObject peer = peers.createNestedObject();
+        peer["PeerID"] = Peers[i].PeerID;
+        // peer["connected"] = Peers[i].Connected;
+        char macStr[18];
+        snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x",
+                Peers[i].MAC[0], Peers[i].MAC[1], Peers[i].MAC[2], Peers[i].MAC[3], Peers[i].MAC[4], Peers[i].MAC[5]);
+        peer["mac"] = macStr;
+        
+        char keyName[5];
+        for (int j = 0; j < 12; j++)
+        {   
+          if (Peers[i].deviceTypes[j] < 255) {
+            sprintf (keyName, "DevId_%d", j);
+            peer[keyName] = Peers[i].deviceTypes[j];
+          }  
+         // peer["DeviceIds"][j] = Peers[i].deviceIds[j];
+         // peer["DeviceTypes"][j] = Peers[i].deviceTypes[j];
+        }
+
+    }
+    serializeJsonPretty(root,Serial);
+}
+
 void savePeers(String from)
 {
 #ifdef DEBUG_SAVE_PEERS
@@ -125,7 +156,7 @@ void savePeers(String from)
     for (int i = 0; i < Peers.size(); i++)
     {
        //if (Peers[i].MAC[0] > 0) {
-         JsonObject peer = peers.createNestedObject();
+        JsonObject peer = peers.createNestedObject();
         peer["PeerID"] = Peers[i].PeerID;
         // peer["connected"] = Peers[i].Connected;
         char macStr[18];
@@ -138,6 +169,10 @@ void savePeers(String from)
           peer["DeviceTypes"][j] = Peers[i].deviceTypes[j];
         }
     }
+
+    
+    
+
     #ifdef DEBUG_SAVE_PEERS
       Serial.println("Peer list saved");
       serializeJson(root, Serial);
@@ -256,6 +291,7 @@ bool addPeerToList(const uint8_t *mac_addr, int8_t PeerID)
 
   //#ifndef SERVER_TEST
     savePeers("addPeerToList()");
+    testPeers();
   //#endif 
   
   return true;
