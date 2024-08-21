@@ -169,10 +169,6 @@ void savePeers(String from)
           peer["DeviceTypes"][j] = Peers[i].deviceTypes[j];
         }
     }
-
-    
-    
-
     #ifdef DEBUG_SAVE_PEERS
       Serial.println("Peer list saved");
       serializeJson(root, Serial);
@@ -291,7 +287,7 @@ bool addPeerToList(const uint8_t *mac_addr, int8_t PeerID)
 
   //#ifndef SERVER_TEST
     savePeers("addPeerToList()");
-    testPeers();
+    //testPeers();
   //#endif 
   
   return true;
