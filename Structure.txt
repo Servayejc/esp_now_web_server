@@ -1,0 +1,17 @@
+Main() 
+
+	fillDevices() 
+
+		loadPeers()
+
+			savePeers() 
+				
+
+OnDataRecv() - PAIRING
+	
+	addPeerToList()
+		
+		addPeerToESPNOW()
+		
+		savePeers();
+						

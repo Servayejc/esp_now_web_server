@@ -1,0 +1,81 @@
+void fillDevices(String fileName)
+{
+	uint8_t PID;
+	uint8_t DID;
+	
+	Serial.print("Fill devices from ");
+	Serial.println(fileName);
+	StaticJsonDocument<1024> doc;
+	//StaticJsonDocument<1024> log;
+	File dataFile = LittleFS.open(fileName);
+	if (dataFile){
+		Serial.println(" Config file Opened");
+		deserializeJson(doc, dataFile);
+		Serial.println("loading DataStructure");
+		JsonArray P = doc["Struct"][0]["Peers"];
+		JsonArray DT = doc["Struct"][1]["DataTypes"];
+		
+		Devices = {};
+		//Serial.println(P.size());
+		char keyStr[30];
+		
+		// Create all Peers
+		for (int i = 0; i < P.size(); i++) {      	  // loop on Peers
+	   
+			JsonArray D = P[i]["Devices"];			
+			for (int j = 0; j < D.size(); j++){		  // loop on Devices
+				Devices[i].PeerID = P[i]["PeerID"];
+				
+				Devices[i].DeviceID = D[j]["ID"];
+				Devices[i].DeviceType = D[j]["Type"];
+				Devices[i].CtrlID = D[j]["CtrlID"];
+				
+				PID = Devices[i].PeerID;
+				DID = D[j]["ID"];
+				for (JsonPair kv : Cells) {
+					snprintf(keyStr, sizeof(keyStr), "%s_%d_%d",kv.key().c_str(),PID,DID);
+					String k = kv.value();
+					m.insert(std::pair<std::string, std::string>((std::string)keyStr, (std::string)kv.value().as<const char*>()));
+				}
+			}		
+		}
+		print_m();
+	dataFile.close();	
+}	
+	  
+	  
+void fillPairingData(uint8_t PeerID, uint8_t *Ids, uint8_t *Types)
+{ 
+  // find Peer
+  Serial.println("A");
+  Serial.println(Devices.size());
+  uint8_t pos = 0;
+  for (int i = 0; i < 12; i++){
+	pairingData.deviceIds[i] = 255;
+	pairingData.deviceTypes[i] = 255;
+	pairingData.CtrlsIds[i] = 255;
+  }
+  pairingData.deviceTypes = {255};
+  for (int i = 0; i < Devices.size(); i++)
+  {
+    if (Devices[i].PeerID == PeerID)     {  
+       pairingData.deviceIds[pos] = Devices[i].DeviceID;
+	   pairingData.deviceTypes[pos] = Devices[i].DeviceType;
+	   pairingData.CtrlsIds[pos] = Devices[i].CtrlID;
+	}   
+	  
+      for (int j = 0; j < 12; j++)
+      {
+        // fill pairingData
+        pairingData.deviceTypes[j] = Devices[i].deviceTypes[j];
+        pairingData.deviceIds[j] = Devices[i].deviceIds[j];
+        pairingData.controlNdx[j] = Devices[i].controlIds[j];
+        Serial.println(Devices[i].controlIds[j]);
+        // used by web socket SetPoints 
+        Types[j] = Devices[i].deviceTypes[j];   
+        Ids[j] = Devices[i].deviceIds[j];       
+      }
+    }
+  }
+  printPairingData();
+}

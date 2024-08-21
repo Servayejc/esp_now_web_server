@@ -1,0 +1,114 @@
+
+<html>
+<head>
+<title>Fade Out</title>
+
+<style>
+
+
+
+
+.container {
+  max-width: 500px;
+  margin: auto;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.message {
+  color: #333;
+  text-align: center;
+  margin-top: 40px;
+}
+
+.circle {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 150px;
+  width: 150px;
+  background: linear-gradient(
+    90deg,
+    hsla(148, 89%, 78%, 1) 0%,
+    hsla(210, 81%, 22%, 1) 100%
+  );
+  color: #fff;
+  font-size: 60px;
+  border-radius: 90px;
+  opacity: 0;
+  transition: opacity 1s ease;
+}
+
+.circle.play {
+  animation: expandCollapse 7s ease;
+  animation-iteration-count: 3;
+}
+
+@keyframes expandCollapse {
+  0% {
+    transform: scale(0.3);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.4);
+  }
+
+  100% {
+    transform: scale(0.3);
+  }
+}
+ </style>
+ 
+ <body>
+ <div class="buttons">
+  <button class="play">Play</button>
+  <button class="cancel">Cancel</button>
+</div>
+<div class="container">
+  <div class="circle"></div>
+  <p class="message"></p>
+</div>
+</body>
+ 
+ 
+ 
+ <script>
+	 
+	 
+const playButton = document.querySelector(".play");
+const cancelButton = document.querySelector(".cancel");
+const message = document.querySelector(".message");
+const circle = document.querySelector(".circle");
+let counter;
+
+playButton.addEventListener("click", () => {
+  circle.classList.add("play");
+  counter = 3;
+});
+
+circle.addEventListener("animationstart", () => {
+  circle.innerText = counter;
+  message.innerText = "Breathe";
+});
+
+circle.addEventListener("animationend", () => {
+  circle.innerText = "";
+  circle.classList.remove("play");
+  message.innerText = "Have a great day!";
+});
+
+
+cancelButton.addEventListener("click", () => {
+  circle.remove();
+});
+
+circle.addEventListener("animationcancel", () => {
+  message.innerText = "There was an error 😟";
+});
+
+	 
+	 	 </script>

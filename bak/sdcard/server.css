@@ -1,0 +1,95 @@
+
+    html {font-family: Arial; display: inline-block; text-align: center;}
+    p {  font-size: 1.2rem;}
+	input {width:40px;  height:20px; border-width:1px; border-radius:4px; font-size:1em;	text-align: left; border-color: #fd7e14; color: #fd7e14;}
+    body { margin: 0;}
+    .topnav { overflow: hidden; background-color: #2f4468; color: white; font-size: 1.7rem; }
+    .content { padding: 20px; }
+    .card { background-color: white; box-shadow: 2px 2px 12px 1px rgba(140,140,140,.5); }
+    .cards { max-width: 700px; margin: 0 auto; display: grid; grid-gap: 2rem; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+    .reading { font-size: 2.8rem; }
+    .setpoint {font-size: 1.4rem; }
+	.packet { color: #bebebe; }
+    .card.temperature { color: #fd7e14; }
+    .card.humidity { color: #1b78e2; }
+    .card.thermostat { color: #fd7e14; }
+    .grayed  { background-color: #585857; }
+    .chart { background-color: #f7f7f7; width: 95%; padding-right:5px; box-shadow: 5px 5px 5px rgba(68, 68, 68, 0.6);}
+  
+    input#datetimepicker {width: 100px; text}
+    
+	
+    .status{background-color: green; margin-left : 4px; margin-right : 4px; border: 2px; width:40px;  height:20px; border: 1px;}
+    .statusRect {display: flex; justify-content: center; }
+    .heat {color: #ff2200; display: none;}
+    .heating {display: inline; color: black;}
+    
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 34px;
+      }
+      
+      .switch input { 
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+      
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        -webkit-transition: .4s;
+        transition: .4s;
+      }
+      
+      .slider:before {
+        position: absolute;
+        content: "";
+        height: 26px;
+        width: 26px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        -webkit-transition: .4s;
+        transition: .4s;
+      }
+      
+      .play{
+         animation: flashing 2s ease; 
+         animation-iteration-count: 3;
+       }
+      
+      @keyframes flashing {
+        0% {box-shadow: 2px 2px 12px 1px rgba(255, 1, 1, 0.5);}
+        100% { box-shadow: 2px 2px 12px 1px rgba(116, 116, 116, 0.996);}
+      } 
+
+      input:checked + .slider {
+        background-color: #2196F3;
+      }
+      
+      input:focus + .slider {
+        box-shadow: 0 0 1px #2196F3;
+      }
+      
+      input:checked + .slider:before {
+        -webkit-transform: translateX(26px);
+        -ms-transform: translateX(26px);
+        transform: translateX(26px);
+      }
+      
+      /* Rounded sliders */
+      .slider.round {
+        border-radius: 34px;
+      }
+      
+      .slider.round:before {
+        border-radius: 50%;
+      }

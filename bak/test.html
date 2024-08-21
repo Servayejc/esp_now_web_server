@@ -1,0 +1,232 @@
+<<html><head>
+   <title>Fade Out</title>
+<style>
+     .fadeout{
+	    font-size: 2.8rem;
+		color: red;
+		
+	 }
+	 
+	 
+	 .flash{
+		background-color: red;
+			animation-name: example;
+			animation-duration: 4s;
+	 }
+	 
+@keyframes example {
+  0%   {color: white}
+
+  100% {color: #fd7e14;;}
+}
+
+/* The element to apply the animation to 
+div {
+  width: 100px;
+  height: 100px;
+  background-color: red;
+  animation-name: example;
+  animation-duration: 4s;*/
+}	 
+
+
+	 html {font-family: Arial; display: inline-block; text-align: center;}
+    p {  font-size: 1.2rem;}
+	input {width:40px;  height:20px; border-width:1px; border-radius:4px; font-size:1em;	text-align: left; border-color: #fd7e14; color: #fd7e14;}
+    body { margin: 0;}
+    .topnav { overflow: hidden; background-color: #2f4468; color: white; font-size: 1.7rem; }
+    .content { padding: 20px; }
+    .card { background-color: white; box-shadow: 2px 2px 12px 1px rgba(140,140,140,.5); }
+    .cards { max-width: 700px; margin: 0 auto; display: grid; grid-gap: 2rem; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+    .reading { font-size: 2.8rem; }
+    .setpoint {font-size: 1.4rem; }
+	.packet { color: #bebebe; }
+    .card.temperature { color: #fd7e14; }
+    .card.humidity { color: #1b78e2; }
+    .card.thermostat { color: #fd7e14; }
+    .grayed  { background-color: #585857; }
+    
+
+
+
+	.status{background-color: green; margin-left : 4px; margin-right : 4px; border: 2px; width:40px;  height:20px; border: 1px;}
+    .statusRect {display: flex; justify-content: center; }
+    .heat {color: #ff2200; display: none;}
+    .heating {display: inline;}
+
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 34px;
+      }
+      
+      .switch input { 
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+      
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        -webkit-transition: .4s;
+        transition: .4s;
+      }
+      
+      .slider:before {
+        position: absolute;
+        content: "";
+        height: 26px;
+        width: 26px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        -webkit-transition: .4s;
+        transition: .4s;
+      }
+      
+      input:checked + .slider {
+        background-color: #2196F3;
+      }
+      
+      input:focus + .slider {
+        box-shadow: 0 0 1px #2196F3;
+      }
+      
+      input:checked + .slider:before {
+        -webkit-transform: translateX(26px);
+        -ms-transform: translateX(26px);
+        transform: translateX(26px);
+      }
+      
+      /* Rounded sliders */
+      .slider.round {
+        border-radius: 34px;
+      }
+      
+      .slider.round:before {
+        border-radius: 50%;
+      }
+	  
+	  
+	  
+	  .circle {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 150px;
+  width: 150px;
+  background: linear-gradient(
+    90deg,
+    hsla(148, 89%, 78%, 1) 0%,
+    hsla(210, 81%, 22%, 1) 100%
+  );
+  color: #fff;
+  font-size: 60px;
+  border-radius: 90px;
+  opacity: 0;
+  transition: opacity 1s ease;
+}
+
+.circle.play {
+  animation: expandCollapse 7s ease;
+  animation-iteration-count: 3;
+}
+
+@keyframes expandCollapse {
+  0% {
+    transform: scale(0.3);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.4);
+  }
+
+  100% {
+    transform: scale(0.3);
+  }
+}
+
+	 
+	 </style>
+	 <script>
+	 
+         function zzz(){
+		    //alert('click');
+		    el = document.getElementById("Title_2_1");
+			fadeOut(el);
+			flash(el);
+		 }
+		 
+		 function anim(el) {
+			
+			
+			
+         }
+		 
+		 
+		 
+		 element.addEventListener("animationend", () => {
+  console.log(event);
+});
+
+element.addEventListener("animationstart", () => {
+  console.log('animation has started');
+});
+       
+      </script></head>
+   
+
+
+   
+   
+   
+   	 
+   <body onload="start();">
+	 <button type="button" onclick="zzz()"> Click Me!</button>
+     
+		 
+      
+  <div class="topnav">
+    <h3>ESP-NOW DASHBOARD</h3>
+  </div>
+  <div class="content">
+    <div class="cards" id="cards">
+		<div class="card thermostat S_2 S_2_1">		
+	
+			<h4><i class="fas fa-thermometer-half"></i> <span id="Title_2_1" class="flash" style="opacity: -0.1;">Poules</span></h4>  
+			<p><span class="reading"><span id="F1_2_1">5.50</span>&nbsp;<heat id="U1_2_1" class="fas fa-fire heat"></heat></span></p>  
+			<p><button id="up_2_1" onclick="OnBtnUp((this))">+</button>  <span class="UpDown" id="F2_2_1">5</span> °C <button id="down_2_1" onclick="OnBtnDown((this))">-</button></p> 
+			<p class="packet"><span id="MsgID_2_1"></span></p>
+		</div>
+	</div>
+  
+  <div class="footer">
+    <button id="PairRQ" onclick="OnPairRQ()">Pair</button>
+  </div>
+  
+  <div class="buttons">
+  <button class="play">Play</button>
+  <button class="cancel">Cancel</button>
+</div>
+<div class="container">
+  <div class="circle"></div>
+  <p class="message"></p>
+  
+  
+</div>
+
+
+
+	  
+	  
+ 
+   
+</div></body></html>

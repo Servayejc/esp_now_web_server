@@ -1,0 +1,22 @@
+
+    html {font-family: Arial; display: inline-block; text-align: center;}
+    p {  font-size: 1.2rem;}
+	input {width:40px;  height:20px; border-width:1px; border-radius:4px; font-size:1em;	text-align: left; border-color: #fd7e14; color: #fd7e14;}
+    body { margin: 0;}
+    .topnav { overflow: hidden; background-color: #2f4468; color: white; font-size: 1.7rem; }
+    .content { padding: 20px; }
+    .card { background-color: white; box-shadow: 2px 2px 12px 1px rgba(140,140,140,.5); }
+    .cards { max-width: 700px; margin: 0 auto; display: grid; grid-gap: 2rem; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+    .reading { font-size: 2.8rem; }
+    .setpoint {font-size: 1.4rem; }
+	.packet { color: #bebebe; }
+    .card.temperature { color: #fd7e14; }
+    .card.humidity { color: #1b78e2; }
+    .card.thermostat { color: #fd7e14; }
+    .grayed  { background-color: #585857; }
+    
+    
+	
+    .status{background-color: green; margin-left : 4px; margin-right : 4px; border: 2px; display:flex; width:40px;  height:20px; border: 1px;}
+    .statusRect {display: flex; justify-content: center; }
+

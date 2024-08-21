@@ -1,0 +1,76 @@
+
+<html>
+<head>
+<title>Fade Out</title>
+<head/>
+<style>
+.container {
+  max-width: 500px;
+  margin: auto;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+
+.play {
+  animation-duration: 3s;
+  animation-name: flash;
+  animation-iteration-count: 1;
+}
+
+.title{
+	font-size: 2rem;
+
+}
+
+
+@keyframes flash {
+
+  0% {transform: scale(1.5);}
+  50% {transform: scale(5.5);}
+  100% {transform: scale(1.5);}
+} 
+</style>
+ 
+<body>
+ 	<div class="buttons">
+	  <button class="start">Play</button>
+	  <button class="cancel">Cancel</button>
+	</div>
+
+	<div class "container">
+		<h4>
+			<i class="fas fa-thermometer-half"></i> 
+				<span id="Title_3_1" class="title">123456</span>
+		</h4>
+	</div>
+</body>
+ 
+ 
+ 
+<script>
+	 
+	 
+const playButton = document.querySelector(".start");
+const cancelButton = document.querySelector(".cancel");
+
+el = document.getElementById("Title_3_1");
+el.addEventListener("animationstart", () => {
+	console.log("start");
+	});
+
+el.addEventListener("animationend", () => {
+	  el.classList.remove("play");
+	  console.log("stop");
+	});
+
+playButton.addEventListener("click", () => {
+	console.log("Button");
+	el = document.getElementById("Title_3_1"); 
+	el.classList.add("play");
+});
+
+</script>

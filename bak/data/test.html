@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>
+   <head>
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/c3/0.7.20/c3.min.css" rel="stylesheet">
+
+
+<script src= "https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script src= "https://cdnjs.cloudflare.com/ajax/libs/c3/0.7.20/c3.min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+	
+	 <script src= "https://cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/2.5.20/jquery.datetimepicker.full.min.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/2.5.20/jquery.datetimepicker.css" rel="stylesheet">
+
+
+
+   </head>
+   
+   <style>
+   html {font-family: Arial; display: inline-block; text-align: center;}
+    p {  font-size: 1.2rem;}
+	input {width:40px;  height:20px; border-width:1px; border-radius:4px; font-size:1em;	text-align: left; border-color: #fd7e14; color: #fd7e14;}
+    body { margin: 0;}
+    .topnav { overflow: hidden; background-color: #2f4468; color: white; font-size: 1.7rem; }
+    .content { padding: 20px; }
+    .card { background-color: white; box-shadow: 2px 2px 12px 1px rgba(140,140,140,.5); }
+    .cards { max-width: 700px; margin: 0 auto; display: grid; grid-gap: 2rem; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+    .reading { font-size: 2.8rem; }
+    .setpoint {font-size: 1.4rem; }
+	.packet { color: #bebebe; }
+    .card.temperature { color: #fd7e14; }
+    .card.humidity { color: #1b78e2; }
+    .card.thermostat { color: #fd7e14; }
+    .grayed  { background-color: #585857; }
+    .chart { background-color: #f7f7f7; width: 95%; padding-right:5px; box-shadow: 5px 5px 5px rgba(68, 68, 68, 0.6);}
+  
+	.header {
+	   color:red
+	}
+    input#datetimepicker {width: 100px; text}
+    
+	
+    .status{background-color: green; margin-left : 4px; margin-right : 4px; border: 2px; width:40px;  height:20px; border: 1px;}
+    .statusRect {display: flex; justify-content: center; }
+    .heat {color: #ff2200; display: none;}
+    .heating {display: inline; color: black;}
+	
+	
+	ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: #333;
+}
+
+li {
+  float: left;
+}
+
+li a {
+  display: block;
+  color: white;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+}
+
+li a:hover {
+  background-color: #111;
+}
+	
+      </style> 
+
+   <body>
+	  <div class="topnav">
+    <h3>ESP-NOW DASHBOARD</h3>
+
+	  <div class="header">
+		<ul>
+			<li><a>	<input id="datetimepicker" type="text" ></a></li>
+			
+			
+			<li><a>	<button id = "Graph"  onclick="OnGraph()">Graph</button></a></li>
+			<li><a>	<button id = "PairRQ"  onclick="OnPairRQ()">Pair</button></a></li>
+		</ul>
+	  </div> 
+  </div>  
+
+  <div class="content">
+    <div class="cards chart"  id="chart" > -graph- </div>
+    
+	
+	
+  </div>
+	  
+	  
+	  
+      
+	  <pre id = "preview"></pre>
+	  
+	  
+	   <i class="far fa-calendar-alt"></i>
+	   
+	   
+	  	
+	</body>  
+	
+  <script>
+
+
+  
+  var chart = c3.generate({
+    bindto: '#chart',
+    data: {
+      columns: [
+        ['data1', 30, 200, 100, 500, 150, 250],
+        ['data2', 50, 20, 10, 40, 15, 25]
+      ]
+    }
+});
+    
+/*	
+	function localTime(x) {
+		d = new Date(x);
+		nd = new Date(d.getTime() - (d.getTimezoneOffset() * 60 * 1000));
+		return( nd.getFullYear()+'-'+pad(nd.getMonth()+1,2)+'-'+pad(nd.getDate(),2)+' '+pad(nd.getHours(),2)+':'+pad(nd.getMinutes(),2));
+	}
+	
+
+
+jQuery('#datetimepicker').datetimepicker({
+
+ timepicker:false,
+ format:'Y-m-d',
+ value :new Date()
+});
+*/
+
+
+	
+	
+	
+	
+/*	var arr;
+	
+	function OnGraph(){
+	    var d = $('#datetimepicker').datetimepicker('getValue');
+			alert(pad(d.getMonth()+1,2) + "_"+pad(d.getDate(),2));
+	 
+*/
+
+	/*fetch( "http://192.168.0.194/getLogData?FN=/data/06_12.JSN", {mode: 'no-cors'} )
+    .then( response => response.json() )
+    .then( response => {
+        console.log("---in fetch ----");
+		console.log(JSON.stringify(response));
+		arr = response;
+		generateChart(arr, Graph, cols, names);
+    });*/
+/*	}
+  
+  
+  	function pad(n, width, z) {
+	z = z || '0';
+	n = n + '';
+	return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
+	}
+
+  
+  function localTime(x) {
+		d = new Date(x);
+		nd = new Date(d.getTime() - (d.getTimezoneOffset() * 60 * 1000));
+		return( nd.getFullYear()+'-'+pad(nd.getMonth()+1,2)+'-'+pad(nd.getDate(),2)+' '+pad(nd.getHours(),2)+':'+pad(nd.getMinutes(),2));
+	}
+		
+	  
+	var cols = ["F1_03_01", "F2_03_03", "F3_03_02"];
+	var names = ["F1","F2","F3"];
+	var id = chart;
+	
+  */
+	  
+/*
+	L = '{"F1_03_01":"0","F1_03_02":"0","F1_04_01":"0"}';
+	cl = JSON.parse(L);
+	
+	//D =  '{"Data":[{"ID":"ESP8266","UID":"2023-11-05T00:00:04","F1_02_01":6.069999695,"F1_03_01":24.48200035,"F1_03_02":22.19999886,"F1_03_03":22.19999886,"F1_04_01":21.13749886,"F1_04_02":-1.225000262,"F1_04_03":18.75,"F1_04_04":22,"U1_02_01":1},{"ID":"ESP8266","UID":"2023-11-05T00:02:04","F1_02_01":6.094999313,"F1_03_01":24.50545502,"F1_03_02":22.19999886,"F1_03_03":22.19999886,"F1_04_01":21.16083336,"F1_04_02":-1.25,"F1_04_03":18.75,"F1_04_04":22,"U1_02_01":1},{"ID":"ESP8266","UID":"2023-11-05T00:04:04","F1_02_01":6.070000172,"F1_03_01":24.53999901,"F1_03_02":22.19999886,"F1_03_03":22.19999886}]}';
+
+    D =  '{"Data":[{"ID":"ESP8266","UID":"2023-11-06T11:12:03","F1_03_01":22.15500069,"F1_03_02":22.20000076,"F1_03_03":22.20000076,"F1_04_01":20.37999916,"F1_04_03":19.55999947,"F1_04_04":20.62000084},{"ID":"ESP8266","UID":"2023-11-06T11:15:03","F1_03_01":22.15500069,"F1_03_02":22.20000076,"F1_03_03":22.20000076,"F1_04_01":20.37999916,"F1_04_03":19.55999947,"F1_04_04":20.62000084}]}';
+	
+	//D =  '{"Data":[{"ID":"ESP8266","UID":"2023-11-05T00:00:04","A":"AAA"},{"B":"BBB"}]}';
+	d = JSON.parse(D);
+	console.log(JSON.stringify(d));
+	//console.log(d.Data);
+	
+	arr = d.Data;
+	//console.log(arr[0].ID);
+	p = arr[0];
+	for (var key in cl) {
+    if (p.hasOwnProperty(key)) 
+		{
+        console.log(key + " -> " + p[key]);
+		}
+	}
+*/	
+	
+	
+
+		
+		function generateChart(arr, id, cols, names) {	
+		var chart = c3.generate({
+			size: {
+				height: 360,
+				},
+			layout:"fitData",
+			bindto: id,
+			data: {
+				json: json.Data,
+				xFormat: '%Y-%m-%dT%H:%M:%S',
+				keys: {
+					x: 'UID',
+					value: cols
+					},
+				names:  names,
+				type: 'spline'
+			},
+			grid:{y: {show: true}},
+			axis : {
+				y : {
+					tick: {
+						max: 30,
+						min: 0
+						}
+					},						  
+				x:{
+					type : "timeseries",
+					tick: {
+					format: function (x) {return(localTime(x).substring(11, 18))},
+					rotate: 60
+					}			
+				}
+			}
+		});
+		return chart;	
+		}	
+	
+
+   </script>
+  
+</html>

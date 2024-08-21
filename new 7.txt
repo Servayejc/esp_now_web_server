@@ -1,0 +1,128 @@
+Server MAC Address:  78:E3:6D:09:FC:88
+Setting as a Wi-Fi Station..
+Setting as a Wi-Fi Station..
+Server SOFT AP MAC Address:  78:E3:6D:09:FC:89
+Station IP Address: 192.168.0.12
+Wi-Fi Channel: 6
+LittleFS Mounted
+[  2732][E][sd_diskio.cpp:802] sdcard_mount(): f_mount failed: (3) The physical drive cannot work
+[  3233][E][sd_diskio.cpp:126] sdSelectCard(): Select Failed
+An Error has occurred while mounting SD
+MDNS started
+-----
+Mode: STA+AP
+Channel: 6
+SSID (12): COGECO-BE360
+Passphrase (11): 3FEADCOGECO
+BSSID set: 0
+-----
+Fill devices from /servertest.json
+ Config file Opened
+loading DataStructure
+
+Title_3_1
+F1_3_1
+F2_3_1
+U1_3_1
+up_3_1
+down_3_1
+MsgID_3_1
+
+Title_3_2
+F1_3_2
+F2_3_2
+U1_3_2
+up_3_2
+down_3_2
+MsgID_3_2
+
+List of aliases
+F1_3_1 = L
+F1_3_2 = L
+U1_3_1 = T
+U1_3_2 = T
+
+End of list of aliases
+
+==== Peers List ==== 399
+     PeerID :3
+        MAC : 00:00:00:00:00:00
+    Channel : 0
+  DeviceIDs : 1, 2, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+DeviceTypes : 0, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 
+ ControlNdx : 1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+==== End of Peers List ====
+
+Setting Timezone to EST5EDT,M3.2.0,M11.1.0
+
+Pairing request from: 84:f3:eb:80:ef:da
+{"msgType":0,"network":99,"id":3,"connected":1,"channel":6}
+
+3
+ Add peer to list  = PeerID : 3
+84:f3:eb:80:ef:da
+
+Pairing Request
+
+start : = -1
+after search : = 0
+end : = 0
+ndx : 0
+fillPairingData
+B
+------- PairingData -------
+msgType : 0
+netWork : 99
+macAddr : 120, 227, 109, 9, 252, 137,
+Channel : 6
+deviceTypes : 0, 0, 255, 255, 255, 255,
+deviceId : 1, 2, 255, 255, 255, 255, 
+controlNdx : 1, 2, 0, 0, 0, 0,
+-------------------
+12393
+Pair success
+[  3477][E][vfs_api.cpp:168] remove(): File system is not mounted
+[  3479][E][vfs_api.cpp:24] open(): File system is not mounted
+==== Peers List ==== 261
+0
+     PeerID :3
+        MAC : 84:f3:eb:80:ef:da
+    Channel :6
+  DeviceIDs : 0, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+DeviceTypes : 0, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 
+ControlNdx : 1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+-------------
+==== End of Peers List ====
+------- PairingData -------
+msgType : 0
+netWork : 99
+macAddr : 120, 227, 109, 9, 252, 137,
+Channel : 6
+deviceTypes : 0, 0, 255, 255, 255, 255,
+deviceId : 1, 2, 255, 255, 255, 255, 
+controlNdx : 1, 2, 0, 0, 0, 0,
+-------------------
+24-01-29 15:02:20
+
+Pairing request from: 84:f3:eb:80:ef:da
+
+{"msgType":0,"network":99,"id":3,"connected":1,"channel":6}
+3
+ Add peer to list  = PeerID : 3
+84:f3:eb:80:ef:da
+start : = -1
+after search : = 0
+end : = 0
+ndx : 0
+fillPairingData
+B
+------- PairingData -------
+msgType : 0
+netWork : 99
+macAddr : 120, 227, 109, 9, 252, 137,
+Channel : 6
+deviceTypes : 0, 0, 255, 255, 255, 255, 
+deviceId : 0, 0, 255, 255, 255, 255,
+controlNdx : 1, 2, 0, 0, 0, 0,
+-------------------
+Already Paired
