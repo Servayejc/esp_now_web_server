@@ -108,7 +108,7 @@ bool addPeerToESPNOW(const uint8_t *peer_addr)
   return true;
 }
 
-void testPeers(){
+/*void testPeers(){
     StaticJsonDocument<2000> root;
     root["channel"] = WiFi.channel();
     JsonArray peers = root.createNestedArray("Peers");
@@ -137,7 +137,7 @@ void testPeers(){
 
     }
     serializeJsonPretty(root,Serial);
-}
+}*/
 
 void savePeers(String from)
 {
