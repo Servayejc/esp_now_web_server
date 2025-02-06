@@ -30,7 +30,6 @@ static const char *password = "3FEADCOGECO";
 static const char *ntpServer = "pool.ntp.org";
 static const char *timeZoneString = "EST5EDT,M3.2.0,M11.1.0";
 
-//static const char *hydro = "http://ofsys.hydroquebec.com/T/OFSYS/SM3/375/2/S/F/8509/9936288/mUccUKtm.html"; //2025
 //static const char *hydro = "http://ofsys.hydroquebec.com/T/OFSYS/SM3/375/2/S/F/8509/18499810/aPy66RR6.html";//2024
 
 //const int GLOBAL_CONST_VAR = 0xFF;
