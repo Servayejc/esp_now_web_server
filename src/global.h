@@ -10,7 +10,7 @@
 extern int chan;
 extern int pingTime;
 extern bool serverReset;
-extern bool canHandle;
+extern SemaphoreHandle_t xSemaphore;
 
 enum PairingStatus {PAIR_REQUEST, PAIR_REQUESTED, PAIR_PAIRED, };
 enum PeerType { THERMOSTAT, THERMOMETER, RELAY, };
@@ -18,6 +18,8 @@ enum MessageType { PAIRING, DATA, SETPOINTS, PING, RESET,};
 
 extern PeerType peerType;
 extern MessageType messageType;
+
+extern int8_t rssi;
 
 typedef struct struct_ping
 {
@@ -55,6 +57,7 @@ typedef struct struct_message
   float F4;
   float F5;  
   uint8_t deviceAddress[8];  // used for DS18B20 addresses
+  
 } struct_message;
 
 typedef struct struct_pairing
@@ -104,7 +107,10 @@ extern struct_LogTemp LT;
 extern std::map<std::string, struct_LogTemp> lt;
 extern std::map<std::string, struct_LogTemp>::iterator it;
 
-extern std::map<std::string, std::string> m;
-extern std::map<std::string, std::string>::iterator m_it;
+//Map Suffix_DeviceType_Map
+extern std::map<std::string, std::string> SuffixToLogType_Map;
+extern std::map<std::string, std::string>::iterator SuffixToLogType_Map_it;
+
+extern SemaphoreHandle_t xSemaphore ;
 
 #endif
