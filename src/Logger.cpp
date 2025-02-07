@@ -5,15 +5,18 @@
 #include "Logger.h"
 #include "Config.h"
 #include "SPI.h" 
+#include "flashLed.h"
+#include <sys/stat.h>
+
 
 struct_LogTemp LT;
 std::map<std::string, struct_LogTemp> lt;
 
 unsigned long starting = millis();
 
-const int CS = 5;
+const int CS = 17;
 
-
+bool loggerPresent = false;
 bool logged = true;
 
 void printTime()
@@ -48,25 +51,31 @@ void initSD()
 {
   pinMode(CS, OUTPUT);
   SPI.end();
+  //SPI.setDataMode(SPI_MODE0);
   SPI.begin(18, 19, 23, CS); 
   
-  SPI.setDataMode(SPI_MODE0); 
-  Serial.println(SCK);
+   
+  /*Serial.println(SCK);
   Serial.println(MISO);
   Serial.println(MOSI);
   Serial.println(CS);
   boolean b;
-  printTime();
+  printTime();*/
   if (SD.begin(CS)) {
     Serial.println("SD Mounted");
+    loggerPresent = true;
   } else {
-    clearSD();
-    b = SD.begin(CS); 
-    if (b) {
-      Serial.println("SD Mounted after clearing SD");
-    } else {  
+    //clearSD();
+   // b = SD.begin(CS); 
+    //if (b) {
+    //  Serial.println("SD Mounted after clearing SD");
+    //} else {  
       Serial.println("An Error has occurred while mounting SD");
-    }  
+      if (!loggerPresent) { 
+        showError(13);
+      }  
+
+    //}  
   }
 }
 
@@ -85,45 +94,52 @@ void addToLogData(std::string key, float value)
 };
 
 void saveOnSD(String fileName, String Data) {
-  bool newfile = !SD.exists(fileName);
-  if (newfile) {
-     Serial.print("Create new data file:  ");
-     Serial.println(fileName);
-     File dataFile = SD.open(fileName, "w", true); 
-     
-    // add JSON structure to new file
-    if (dataFile) {
-        dataFile.print("{\"Data\":[");
+  if (xSemaphoreTake (xSemaphore, (50 * portTICK_PERIOD_MS))) {
+    //struct stat buf;
+    bool newfile = !SD.exists(fileName);
+    //bool newfile = !stat(fileName.c_str(), &buf);
+    if (newfile) {
+      Serial.print("Create new data file:  ");
+      Serial.println(fileName);
+      File dataFile = SD.open(fileName, "w", true); 
+      
+      // add JSON structure to new file
+      if (dataFile) {
+          dataFile.print("{\"Data\":[");
+          dataFile.print(Data);
+          dataFile.print("]}");
+          dataFile.flush();
+          dataFile.close();
+          Serial.println("Data added to new file"); 
+      }
+    }  //if (newfile)
+    else
+    {  // file exists
+      Serial.println("Data file already exists");
+      Serial.println("C");
+      // do not use "a" or "a+"" because seek don't work in this mode
+      File dataFile = SD.open(fileName, "r+");
+      if (dataFile) {
+        // erase "]}" at the end of the file
+        Serial.println("Data file is opened ");
+        dataFile.seek(dataFile.size() - 2);
+        // append separator
+        dataFile.print(",");
+        // append data
         dataFile.print(Data);
+        // rewrite closing "]}"
         dataFile.print("]}");
         dataFile.flush();
         dataFile.close();
-        Serial.println("Data added to new file"); 
-    }
+        Serial.println("Data added to existing file");
+      } else {
+        Serial.println("Can not open existing file!");
+      }
+    } 
   }
-  else
-  {
-    Serial.println("Data file already exists");
-    // do not use "a" or "a+"" because seek don't work in these modes
-    File dataFile = SD.open(fileName, "r+");
-    if (dataFile) {
-      // erase "]}" at the end of the file
-      Serial.println("Data file is opened ");
-      dataFile.seek(dataFile.size() - 2);
-      // append separator
-      dataFile.print(",");
-      // append data
-      dataFile.print(Data);
-      // rewrite closing "]}"
-      dataFile.print("]}");
-      dataFile.flush();
-      dataFile.close();
-      Serial.println("Data added to existing file");
-    } else {
-      Serial.println("Can not open existing file!");
-    }
-  }  
+  xSemaphoreGive(xSemaphore);
 }
+
 
 bool logDataOnSD()
 {   
@@ -144,7 +160,7 @@ bool logDataOnSD()
     printUtcTime();
   #endif
   char utc[25];
-  sprintf(utc, "%02d-%02d-%02dT%02d:%02d:%02d", 2023, timeinfo.tm_mon+1, timeinfo.tm_mday, timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec); // UTC time
+  sprintf(utc, "%04d-%02d-%02dT%02d:%02d:%02d", 1900+timeinfo.tm_year, timeinfo.tm_mon+1, timeinfo.tm_mday, timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec); // UTC time
  
 
   // Prepare json
@@ -171,10 +187,12 @@ bool logDataOnSD()
     char payload[2000];
     #ifdef DEBUG_LOGGER
       serializeJson(root, Serial);
+      Serial.println();
     #endif  
     serializeJson(root, payload);
-    //initSD();
-    saveOnSD(fileName, payload);
+    if (loggerPresent) {
+      saveOnSD(fileName, payload);
+    }  
   }
   return true;
 }
@@ -186,12 +204,9 @@ void processLogger()
     if (LocalTimeinfo.tm_min % 15 == 0){
       if (!logged){
         logged = true;
-        canHandle = false;
         logDataOnSD();
-        
-        canHandle = true;
         char utc[25];
-        sprintf(utc, "%02d-%02d-%02dT%02d:%02d:%02d", 2023, LocalTimeinfo.tm_mon+1, LocalTimeinfo.tm_mday, LocalTimeinfo.tm_hour,  LocalTimeinfo.tm_min, LocalTimeinfo.tm_sec); // UTC time
+        sprintf(utc, "%04d-%02d-%02dT%02d:%02d:%02d", 1900+LocalTimeinfo.tm_year, LocalTimeinfo.tm_mon+1, LocalTimeinfo.tm_mday, LocalTimeinfo.tm_hour,  LocalTimeinfo.tm_min, LocalTimeinfo.tm_sec); // UTC time
         Serial.print("Logged at local time  ");
         Serial.println(utc);
       }  

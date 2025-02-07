@@ -12,6 +12,7 @@
 #include "Svr.h"
 
 
+
 //#ifdef SERVER_TEST//
 //  AsyncWebServer server(8080);
 //#else
@@ -25,13 +26,19 @@ PeerList Peers = {};
 struct_message setpoints = {};
 struct_pairing pairingData = {};
 
-std::map<std::string, std::string> m;
-std::map<std::string, std::string>::iterator m_it;
+std::map<std::string, std::string> SuffixToLogType_Map;
+std::map<std::string, std::string>::iterator SuffixToLogType_Map_it;
+
 std::map<std::string, struct_LogTemp>::iterator it;
 
+#define LED 2
 
 void ProcessDataReceived(const uint8_t *mac_addr, const uint8_t *incomingData, int len)
 {
+  
+  digitalWrite(LED,!digitalRead(LED));
+ 
+  
   char keyStr[30]; 
  
   StaticJsonDocument<1000> root;
@@ -39,11 +46,11 @@ void ProcessDataReceived(const uint8_t *mac_addr, const uint8_t *incomingData, i
   uint8_t type = incomingData[0]; // first message byte is the type of message
   int PeerID = macToPeerID(mac_addr);
 
-#ifdef DEBUG_DATA_RECEIVED
+//#ifdef DEBUG_DATA_RECEIVED
    printlnMAC(mac_addr);
    Serial.println(PeerID);
    
-#endif
+//#endif
   
   if (PeerID > 0)
   {
@@ -86,7 +93,7 @@ void ProcessDataReceived(const uint8_t *mac_addr, const uint8_t *incomingData, i
     }
     Serial.println();
 #endif    
-
+    Data["rssi"] = rssi;
     switch (deviceType)
     {
     case 0: // Thermostat
@@ -94,6 +101,7 @@ void ProcessDataReceived(const uint8_t *mac_addr, const uint8_t *incomingData, i
       Data["F1"] = buffer;
       Data["F2"] = incomingReadings.F2;
       Data["U1"] = incomingReadings.U1;
+      Data["MsgID"] = deviceStr;
       break;
 
     case 1: // Thermometer
@@ -107,14 +115,18 @@ void ProcessDataReceived(const uint8_t *mac_addr, const uint8_t *incomingData, i
       Data["U1"] = incomingReadings.U1;
       break;
     }
+    
+    //{"PeerID":3,"DeviceID":2,"D":[{"F1":"22.19","MsgID":"28:27:be:54:03:00:00:f2"}]}
     char keyStr[30];
-    JsonObject Z = root["D"][0]; 
+    JsonObject Z = root["D"][0];   //{"F1":"22.19") 
     for (JsonPair kv : Z) {
       snprintf(keyStr, sizeof(keyStr), "%s_%d_%d",kv.key().c_str(),PeerID,incomingReadings.deviceId);
-      auto a = m.find((std::string)keyStr);
+      // "F1_3_2"
+      
+      auto a = SuffixToLogType_Map.find((std::string)keyStr);
 
-      if(a!= m.end()){
-        if  (!a->second.empty()){
+      if(a!= SuffixToLogType_Map.end()){
+        if  (a->second == "L"){
           #ifdef DEBUG_DATA_RECEIVED  
             Serial.print("----logging ");
             Serial.print(a->first.c_str());
@@ -162,10 +174,8 @@ void OnDataRecv(const uint8_t *mac_addr, const uint8_t *incomingData, int len)
     //#ifdef DEBUG_PAIRING
       Serial.print("Pairing request from: ");
       printlnMAC(mac_addr);
-      Serial.println();
     //#endif  
     StaticJsonDocument<1000> root;
-    pairingData.network = SERVER_ID;
     root["msgType"] = pairingData.msgType;
     root["network"] = pairingData.network; // ServerID
     root["id"] = pairingData.id;           // PeerID
@@ -179,8 +189,8 @@ void OnDataRecv(const uint8_t *mac_addr, const uint8_t *incomingData, int len)
     {
       if (pairingData.msgType == PAIRING)
       {
-        Serial.print(pairingData.id);
-        printlnMAC(mac_addr);
+        //Serial.print(pairingData.id);
+        //printlnMAC(mac_addr);
         addPeerToList(mac_addr, pairingData.id);
         // getDevices(pairingData.id);
         pairingData.id = SERVER_ID;
@@ -324,26 +334,28 @@ const char * html ="<p> %zxz% </p>";
 
 
 String processor(const String& var) {
-  Serial.println(var);
-  
+   
   if(var == "zxz"){
     return F("Hello world!");
   }
     
   if (var == "Config"){
+    Serial.println("A");
     File peersFile = LittleFS.open("/peersList.js", "r");
-    StaticJsonDocument<1000> root;
+    StaticJsonDocument<2000> root;
     DeserializationError error = deserializeJson(root, peersFile); 
     String result ;   
     serializeJsonPretty(root, result);
-    String html ;
+    String html;
     for (char ch : result){
       switch (ch){
       case 10:
         html += "<br>";
+        //Serial.println("LF");
         break;
       
       case 32: 
+        //Serial.println("SP");
         html += "&nbsp;&nbsp;&nbsp;&nbsp;";
         break;
 
@@ -353,20 +365,22 @@ String processor(const String& var) {
     }
     return html;
   }
+
   return String();
 }
 
 
 void startServer()
 {
-  server.serveStatic("/", LittleFS, "/");
+  
  
   server.on("/readFile", HTTP_GET, [](AsyncWebServerRequest* request) {
-    if (canHandle){
+    if (xSemaphoreTake (xSemaphore, (50 * portTICK_PERIOD_MS))){
       int paramsNr = request->params(); 
       Serial.println(paramsNr);
       AsyncWebParameter * p = request->getParam(0); 
       Serial.println(p->value());
+      
       #ifdef SERVER_TEST
         File f = LittleFS.open(p->value());
       #else
@@ -375,26 +389,33 @@ void startServer()
       #endif  
       if (!f) {
         Serial.println ("Log file not found");
+        request->send(404); //file not found
         return;
+      } else {
+        Serial.println("Log file opened");
+          AsyncWebServerResponse* response = request->
+          beginChunkedResponse("application/json", [f](uint8_t* buffer, size_t maxLen, size_t index)-> size_t{
+          return load_data(f, buffer, 1024, index);
+        });
+        request->send(response);
       }
-      Serial.println("Log file opened");
-        AsyncWebServerResponse* response = request->
-        beginChunkedResponse("application/json", [f](uint8_t* buffer, size_t maxLen, size_t index)-> size_t{
-        return load_data(f, buffer, 2048, index);
-      });
-      request->send(response);
-     } else {
+    } else {
       Serial.println("Log file Locked");
     }
+    xSemaphoreGive (xSemaphore);
   });
 
-  server.on("/vest", HTTP_GET, [](AsyncWebServerRequest *request)
-            { request->send(LittleFS, "/test.htm", String(), false, processor); });
-      
+  //server.on("/vest", HTTP_GET, [](AsyncWebServerRequest *request)
+    //        { request->send(LittleFS, "/test.htm", String(), false, processor); });
 
+  //server.on("/config", HTTP_GET, [](AsyncWebServerRequest *request)
+    //        { request->send(LittleFS, "/Config.htm"); }); 
+  
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
             { request->send(LittleFS, "/server.htm"); }); 
-
+  
+  server.serveStatic("/", LittleFS, "/");   
+  
   server.onNotFound([](AsyncWebServerRequest *request){
     if (request->method() == HTTP_OPTIONS){
       request->send(200);
@@ -424,26 +445,6 @@ void startServer()
   DefaultHeaders::Instance().addHeader("Access-Control-Allow-Headers", "*");
   
   server.begin();
+
 }
 
-/*void setActivePeers()
-{
-  // modify the code to increase
-
-
-  StaticJsonDocument<1000> root;
-
-  JsonArray D = root.createNestedArray("D");
-  JsonObject Data = D.createNestedObject();
-  for (int i = 0; i < Peers.size(); i++){
-    int status = ((millis() - Peers[i].LastData)) > 10000 ? 0 : 1;
-    String S = "S_";
-    S += Peers[i].PeerID;
-    Data[S] = status;
-  }
-  String payload;
-  serializeJson(root, payload);
-  // serializeJson(root, Serial);
-  Serial.println();
-  events.send(payload.c_str(), "peers_status", millis());
-}*/
