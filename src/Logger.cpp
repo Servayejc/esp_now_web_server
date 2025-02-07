@@ -71,7 +71,7 @@ void initSD()
     //  Serial.println("SD Mounted after clearing SD");
     //} else {  
       Serial.println("An Error has occurred while mounting SD");
-      if (loggerPresent) { 
+      if (!loggerPresent) { 
         showError(13);
       }  
 
@@ -191,7 +191,7 @@ bool logDataOnSD()
     #endif  
     serializeJson(root, payload);
     if (loggerPresent) {
-      (fileName, payload);
+      saveOnSD(fileName, payload);
     }  
   }
   return true;
