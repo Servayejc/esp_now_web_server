@@ -5,9 +5,12 @@
 #include "Logger.h"
 #include "Config.h"
 #include "SPI.h" 
+#include "flashLed.h"
 
 struct_LogTemp LT;
 std::map<std::string, struct_LogTemp> lt;
+
+bool loggerPresent = false;
 
 unsigned long starting = millis();
 
