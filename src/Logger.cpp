@@ -5,6 +5,7 @@
 #include "Logger.h"
 #include "Config.h"
 #include "SPI.h" 
+#include "flashLed.h"
 
 struct_LogTemp LT;
 std::map<std::string, struct_LogTemp> lt;
@@ -13,6 +14,7 @@ unsigned long starting = millis();
 
 const int CS = 5;
 
+bool loggerPresent = false;
 
 bool logged = true;
 
@@ -68,6 +70,11 @@ void initSD()
       Serial.println("An Error has occurred while mounting SD");
     }  
   }
+  if (!loggerPresent) { 
+    showError(13);
+  }  
+
+  
 }
 
 void addToLogData(std::string key, float value)
