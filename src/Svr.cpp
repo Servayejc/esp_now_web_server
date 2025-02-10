@@ -46,11 +46,10 @@ void ProcessDataReceived(const uint8_t *mac_addr, const uint8_t *incomingData, i
   uint8_t type = incomingData[0]; // first message byte is the type of message
   int PeerID = macToPeerID(mac_addr);
 
-//#ifdef DEBUG_DATA_RECEIVED
+#ifdef DEBUG_DATA_RECEIVED
    printlnMAC(mac_addr);
    Serial.println(PeerID);
-   
-//#endif
+#endif
   
   if (PeerID > 0)
   {
