@@ -9,6 +9,8 @@ void printTime();
 void initSD();
 void addToLogData(std::string key, float value);
 void processLogger();
+
+void saveOnSD(String fileName, String Data);
 //bool logDataOnSD(tm timeinfo);
 
 

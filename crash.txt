@@ -1,0 +1,43 @@
+21:10:40.760 > Log file Locked
+21:10:41.480 > 1
+21:10:41.480 > /12_11.JSN
+21:10:41.531 > Log file opened
+21:10:41.736 > Pairing request from: 84:f3:eb:80:ef:da
+21:10:41.741 > Add peer to list  PeerID : 3
+21:10:41.745 > Fill pairing data for PeerID 3
+21:10:41.745 > -- Save peers from addPeerToList()
+21:10:41.745 > Peer list saved
+21:10:42.095 > 1
+21:10:42.095 > /12_11.JSN
+21:10:42.149 > Log file opened
+21:10:43.931 > 1
+21:10:43.932 > /12_11.JSN
+21:10:43.982 > Log file opened
+21:10:44.032 > 
+21:10:44.032 > assert failed: block_trim_free heap_tlsf.c:371 (block_is_free(block) && "block must be free")
+21:10:44.052 >
+21:10:44.052 >
+
+  #0  0x400837c9 in panic_abort at 				%/esp-idf/components/esp_system/panic.c:408
+  #1  0x4008e169 in esp_system_abort at 		%/esp-idf/components/esp_system/esp_system.c:137
+  #2  0x40093791 in __assert_func at 			%/esp-idf/components/newlib/assert.c:85
+  #3  0x40092bea in block_locate_free at 		%/esp-idf/components/heap/heap_tlsf.c:441
+      (inlined by) tlsf_malloc at 				%/esp-idf/components/heap/heap_tlsf.c:850
+  #4  0x400932af in multi_heap_malloc_impl at 	%/esp-idf/components/heap/multi_heap.c:187
+  #5  0x400933ec in multi_heap_malloc at 		%/esp-idf/components/heap/multi_heap_poisoning.c:234
+      (inlined by) multi_heap_malloc at 		%/esp-idf/components/heap/multi_heap_poisoning.c:223
+  #6  0x40083c8c in heap_caps_malloc_base at 	%/esp-idf/components/heap/heap_caps.c:175
+      (inlined by) heap_caps_malloc_base at 	%/esp-idf/components/heap/heap_caps.c:120
+  #7  0x40083ca1 in heap_caps_malloc at 		%/esp-idf/components/heap/heap_caps.c:195
+  #8  0x40083cca in heap_caps_malloc_default at %/esp-idf/components/heap/heap_caps.c:220
+  #9  0x400937a1 in malloc at 					%/esp-idf/components/newlib/heap.c:24
+  #10 0x400ffb78 in mem_malloc at 				%/esp-idf/components/lwip/lwip/src/core/mem.c:237
+  #11 0x401007f7 in pbuf_alloc at 				%/esp-idf/components/lwip/lwip/src/core/pbuf.c:288
+  #12 0x40105185 in tcp_pbuf_prealloc at 		%/esp-idf/components/lwip/lwip/src/core/tcp_out.c:263
+      (inlined by) tcp_write at 				%/esp-idf/components/lwip/lwip/src/core/tcp_out.c:610
+  #13 0x40163e7f in _tcp_write_api(tcpip_api_call_data*) at /src/AsyncTCP.cpp:398
+  #14 0x400fe3e0 in tcpip_thread_handle_msg at 	%/esp-idf/components/lwip/lwip/src/api/tcpip.c:172
+      (inlined by) tcpip_thread at 				%/esp-idf/components/lwip/lwip/src/api/tcpip.c:154
+
+21:10:44.695 > 
+
