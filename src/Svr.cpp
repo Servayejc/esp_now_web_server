@@ -171,10 +171,10 @@ void OnDataRecv(const uint8_t *mac_addr, const uint8_t *incomingData, int len)
 
   case PAIRING: // the message is a pairing request
     memcpy(&pairingData, incomingData, sizeof(pairingData));
-    //#ifdef DEBUG_PAIRING
+    #ifdef DEBUG_PAIRING
       Serial.print("Pairing request from: ");
       printlnMAC(mac_addr);
-    //#endif  
+    #endif  
     StaticJsonDocument<1000> root;
     root["msgType"] = pairingData.msgType;
     root["network"] = pairingData.network; // ServerID
