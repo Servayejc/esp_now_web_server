@@ -65,23 +65,11 @@ void initSD()
     Serial.println("SD Mounted");
     loggerPresent = true;
   } else {
-    //clearSD();
-   // b = SD.begin(CS); 
-    //if (b) {
-    //  Serial.println("SD Mounted after clearing SD");
-    //} else {  
-      Serial.println("An Error has occurred while mounting SD");
-      if (!loggerPresent) { 
-        showError(13);
-      }  
-
-    //}  
+    Serial.println("An Error has occurred while mounting SD"); 
   }
   if (!loggerPresent) { 
     showError(13);
   }  
-
-  
 }
 
 void addToLogData(std::string key, float value)
