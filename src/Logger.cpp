@@ -88,9 +88,7 @@ void addToLogData(std::string key, float value)
 
 void saveOnSD(String fileName, String Data) {
   if (xSemaphoreTake (xSemaphore, (50 * portTICK_PERIOD_MS))) {
-    //struct stat buf;
     bool newfile = !SD.exists(fileName);
-    //bool newfile = !stat(fileName.c_str(), &buf);
     if (newfile) {
       Serial.print("Create new data file:  ");
       Serial.println(fileName);
