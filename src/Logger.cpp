@@ -51,16 +51,7 @@ void initSD()
 {
   pinMode(CS, OUTPUT);
   SPI.end();
-  //SPI.setDataMode(SPI_MODE0);
   SPI.begin(18, 19, 23, CS); 
-  
-   
-  /*Serial.println(SCK);
-  Serial.println(MISO);
-  Serial.println(MOSI);
-  Serial.println(CS);
-  boolean b;
-  printTime();*/
   if (SD.begin(CS)) {
     Serial.println("SD Mounted");
     loggerPresent = true;
@@ -74,7 +65,6 @@ void initSD()
 
 void addToLogData(std::string key, float value)
 {
-  //Serial.println(key.c_str());
   auto a = lt.find(key);
   if(a!= lt.end()){
     a->second.F1 += value;
