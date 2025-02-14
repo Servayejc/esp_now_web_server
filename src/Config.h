@@ -33,7 +33,7 @@ static const char *timeZoneString = "EST5EDT,M3.2.0,M11.1.0";
 //static const char *hydro = "http://ofsys.hydroquebec.com/T/OFSYS/SM3/375/2/S/F/8509/18499810/aPy66RR6.html";//2024
 
 //const int GLOBAL_CONST_VAR = 0xFF;
-
+#define SERVER_TEST
 #ifdef SERVER_TEST
    static const char *hostName = "servertest";
    static const int serverPort = 8080;

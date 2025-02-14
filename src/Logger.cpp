@@ -58,9 +58,9 @@ void initSD()
   } else {
     Serial.println("An Error has occurred while mounting SD"); 
   }
-  if (!loggerPresent) { 
+  /*if (!loggerPresent) { 
     showError(13);
-  }  
+  }  */
 }
 
 void addToLogData(std::string key, float value)

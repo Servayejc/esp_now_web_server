@@ -255,7 +255,9 @@ void setup()
     Serial.println(" bytes");  
   #endif
   delay(1000);
+  
   initSD();
+
   #ifdef DEBUG_LITTLEFS
     Serial.print("Card Type : ");
     Serial.println(SD.cardType());
