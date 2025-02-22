@@ -193,6 +193,7 @@ void setup()
 
   // Set the device as a Station and Soft Access Point simultaneously
   WiFi.mode(WIFI_AP_STA);
+  
   esp_wifi_set_promiscuous(true); 
   esp_wifi_set_promiscuous_rx_cb(&promiscuous_rx_cb);
   WiFi.begin(ssid, password);
@@ -202,6 +203,8 @@ void setup()
     Serial.println("Setting as a Wi-Fi Station...");
   }
   chan = WiFi.channel();
+  // hide module on WiFi network   
+  WiFi.softAP(ssid, password, chan, true);
   #ifdef DEBUG_WIFI
     Serial.print("Server SOFT AP MAC Address:  ");
     Serial.println(WiFi.softAPmacAddress());
