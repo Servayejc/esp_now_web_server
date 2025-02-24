@@ -43,7 +43,7 @@ void clearSD(){
 }
 
 /*
-  Caution : micro-sd card needs up tp 100mA when writing, do NOT uses 3.3V from esp32 board.
+  Caution : micro-sd card needs up to 100mA when writing, do NOT uses 3.3V from esp32 board.
   Uses microSD adapter like Adafruit breakout board 254 and power it from the USB 5V to avoid problems 
   when mounting SD or intermittent readings or writing errrors.
 */

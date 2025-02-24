@@ -12,12 +12,7 @@
 #include "Svr.h"
 
 
-
-//#ifdef SERVER_TEST//
-//  AsyncWebServer server(8080);
-//#else
-  AsyncWebServer server(serverPort);  
-//#endif
+AsyncWebServer server(serverPort);  
 AsyncEventSource events("/events");
 AsyncWebSocket ws("/ws");
 
@@ -28,16 +23,14 @@ struct_pairing pairingData = {};
 
 std::map<std::string, std::string> SuffixToLogType_Map;
 std::map<std::string, std::string>::iterator SuffixToLogType_Map_it;
-
 std::map<std::string, struct_LogTemp>::iterator it;
 
 #define LED 2
 
+// ESP_NOW message received from a peer
 void ProcessDataReceived(const uint8_t *mac_addr, const uint8_t *incomingData, int len)
 {
-  
   digitalWrite(LED,!digitalRead(LED));
- 
   
   char keyStr[30]; 
  
@@ -63,24 +56,17 @@ void ProcessDataReceived(const uint8_t *mac_addr, const uint8_t *incomingData, i
     snprintf(deviceStr, sizeof(deviceStr), "%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x",
            incomingReadings.deviceAddress[0], incomingReadings.deviceAddress[1],incomingReadings.deviceAddress[2], incomingReadings.deviceAddress[3], incomingReadings.deviceAddress[4], incomingReadings.deviceAddress[5], incomingReadings.deviceAddress[6], incomingReadings.deviceAddress[7]);
     
-
     // create a JSON document with received data and send it by event to the web page
-    // root["Title"] = "Bonjour";
     root["PeerID"] = PeerID;
     root["DeviceID"] = incomingReadings.deviceId;
+    uint8_t deviceType = incomingReadings.deviceType;
 
 #ifdef DEBUG_DATA_RECEIVED
     Serial.print("DeviceID : ");
     Serial.print(incomingReadings.deviceId);
 #endif
-    uint8_t deviceType = incomingReadings.deviceType;
-
-    // Reset divice watchdog for this device
-    //  get device
-
     JsonArray D = root.createNestedArray("D");
     JsonObject Data = D.createNestedObject();
-
     char buffer[10];
 
 #ifdef DEBUG_DATA_RECEIVED
@@ -117,10 +103,11 @@ void ProcessDataReceived(const uint8_t *mac_addr, const uint8_t *incomingData, i
     
     //{"PeerID":3,"DeviceID":2,"D":[{"F1":"22.19","MsgID":"28:27:be:54:03:00:00:f2"}]}
     char keyStr[30];
+    
     JsonObject Z = root["D"][0];   //{"F1":"22.19") 
     for (JsonPair kv : Z) {
-      snprintf(keyStr, sizeof(keyStr), "%s_%d_%d",kv.key().c_str(),PeerID,incomingReadings.deviceId);
-      // "F1_3_2"
+      snprintf(keyStr, sizeof(keyStr), "%s_%d_%d",kv.key().c_str(),PeerID,incomingReadings.deviceId); // "F1_3_2"
+      
       
       auto a = SuffixToLogType_Map.find((std::string)keyStr);
 

@@ -53,8 +53,6 @@ uint8_t broadcastAddressR[] = {0x84, 0xF3, 0xEB, 0x80, 0xEF, 0xDA};
 uint8_t broadcastAddressX[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 uint8_t lastSendAddress[6] = {0};
 
-
-
 //esp_now_peer_info_t slave;
 int chan = 11; //
 int pingTime = 0;
@@ -75,44 +73,11 @@ typedef struct {
 } wifi_ieee80211_packet_t;
 
 
-void WiFiStationConnected(WiFiEvent_t event, WiFiEventInfo_t info){
-  Serial.println("Connected to AP successfully!");
-}
-
-void WiFiGotIP(WiFiEvent_t event, WiFiEventInfo_t info){
-  Serial.println("WiFi connected");
-  Serial.println("IP address: ");
-  Serial.println(WiFi.localIP());
-}
-
-void WiFiStationDisconnected(WiFiEvent_t event, WiFiEventInfo_t info){
-  Serial.println("Disconnected from WiFi access point");
-  Serial.print("WiFi lost connection. Reason: ");
-  //Serial.println(info.disconnected.reason);
-  Serial.println("Trying to Reconnect");
-  WiFi.begin(ssid, password);
-}
-
-
 struct_reset pairReset;
 struct_pairing ping;
 struct_message incomingReadings;
 struct_message outgoingSetpoints;
-//struct_message pairingData;
-/*
-void connected_to_ap(WiFiEvent_t wifi_event, WiFiEventInfo_t wifi_info) {
-  Serial.println("[+] Connected to the WiFi network");
-}
 
-void disconnected_from_ap(WiFiEvent_t wifi_event, WiFiEventInfo_t wifi_info) {
-  Serial.println("[-] Disconnected from the WiFi AP");
-  WiFi.begin(ssid, password);
-}
-
-void got_ip_from_ap(WiFiEvent_t wifi_event, WiFiEventInfo_t wifi_info) {
-  Serial.print("[+] Local ESP32 IP: ");
-  Serial.println(WiFi.localIP());
-}*/
 
 void setTimezone(String timezone){
   Serial.printf("Setting Timezone to %s\n",timezone.c_str());
@@ -143,17 +108,6 @@ void promiscuous_rx_cb(void *buf, wifi_promiscuous_pkt_type_t type) {
 	  }
 }
 
-void getHQData(JsonArray events) {
-    Serial.println("getHQData");
-    WiFiClient client;
-    HTTPClient http;
-    http.begin(client, "http://ofsys.hydroquebec.com/T/OFSYS/SM3/375/2/S/F/8509/18499810/aPy66RR6.html"); 
-   
-    int httpCode = http.GET();     
-    if (httpCode == 200){
-    }
-}
-
 void setup()
 {
   // Initialize Serial Monitor
@@ -169,28 +123,6 @@ void setup()
   delay(1000);
   digitalWrite(LED,LOW);
  
-  /*http.begin("http://ofsys.hydroquebec.com/T/OFSYS/SM3/375/2/S/F/8509/18499810/aPy66RR6.html");
-  int httpCode = http.GET();
-
-    // httpCode will be negative on error
-    if (httpCode > 0) {
-      // HTTP header has been send and Server response header has been handled
-      Serial.printf("[HTTP] GET... code: %d\n", httpCode);
-
-      // file found at server
-      if (httpCode == HTTP_CODE_OK) {
-        String payload = http.getString();
-        Serial.println(payload);
-      }
-    } else {
-      Serial.printf("[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
-    }
-
-  http.end();*/
-  
-
-
-
   // Set the device as a Station and Soft Access Point simultaneously
   WiFi.mode(WIFI_AP_STA);
   
@@ -203,8 +135,9 @@ void setup()
     Serial.println("Setting as a Wi-Fi Station...");
   }
   chan = WiFi.channel();
-  // hide module on WiFi network   
+  // hide AP on WiFi network, it's not a real AP  
   WiFi.softAP(ssid, password, chan, true);
+
   #ifdef DEBUG_WIFI
     Serial.print("Server SOFT AP MAC Address:  ");
     Serial.println(WiFi.softAPmacAddress());
@@ -217,31 +150,7 @@ void setup()
     WiFi.printDiag(Serial);
   #endif  
 
- /* Serial.println("scan start");
-
-  // WiFi.scanNetworks will return the number of networks found
-  int n = WiFi.scanNetworks();
-  Serial.println("scan done");
-  if (n == 0) {
-      Serial.println("no networks found");
-  } else {
-    Serial.print(n);
-    Serial.println(" networks found");
-    for (int i = 0; i < n; ++i) {
-      // Print SSID and RSSI for each network found
-      Serial.print(i + 1);
-      Serial.print(": ");
-      Serial.print(WiFi.SSID(i));
-      Serial.print(" (");
-      Serial.print(WiFi.RSSI(i));
-      Serial.print(")");
-      Serial.println((WiFi.encryptionType(i) == WIFI_AUTH_OPEN)?" ":"*");
-      delay(10);
-    }
-  }
-  Serial.println("");*/
-
-  // Start NTP 
+   // Start NTP 
   configTime(0,0,ntpServer);
 
   // Mount LittleFS
@@ -271,9 +180,6 @@ void setup()
     Serial.println(" bytes");  
   #endif
   
-  // initialize ESPNOW
-  //initESP_NOW();
-
   // Initilaze MDNS (Bonjour) 
   while (!MDNS.begin(hostName))
   {
@@ -282,21 +188,20 @@ void setup()
   }
   Serial.println("MDNS started");
   MDNS.addService("http", "tcp", serverPort);
-
-  //showDirectory();
-  //copyLittleFStoSD();
-  
+ 
   #ifdef DEBUG_DIRECTORY
     showDirectory();
   #endif
-  
-                  // load saved peers from peers.js 
-    
-  setTimezone(timeZoneString); 
+
+  setTimezone(timeZoneString);
+
+  // initialize ESPNOW 
   initESP_NOW();
+  
+  // read structure for all peers and all devices
   if (fillDevices("/Struct.json")){ 
     Serial.println("Devices Loaded");
-    loadPeers();        //  todo add param to allow addPeerToESPNOW
+    loadPeers();       
   }
   
   Serial.println("Starting server");
@@ -304,16 +209,11 @@ void setup()
   Serial.println("Server started");   
 
   addPeerToESPNOW(broadcastAddressX);
-  
-
-  //serverReset = true;
-  
 }
 
 void loop()
 { 
   if (serverReset) {
-    
     Serial.println("Pairing Request");
     pairReset.id = SERVER_ID;
     pairReset.msgType = RESET;
@@ -322,7 +222,7 @@ void loop()
   } 
   processBlink();
   static unsigned long lastEventTime = millis();
-  static const unsigned long EVENT_INTERVAL_MS = 5000;     //1000
+  static const unsigned long EVENT_INTERVAL_MS = 5000;     
   if ((millis() - lastEventTime) > EVENT_INTERVAL_MS)
   {
     lastEventTime = millis();
@@ -335,10 +235,6 @@ void loop()
     #ifdef DEBUG_TIME
        printTime();
     #endif
-    //setActivePeers();
     processLogger();
   }
-
-  //saveOnSD("/ABC", "ABC");
-  
 }

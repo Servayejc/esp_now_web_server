@@ -409,7 +409,7 @@ bool fillDevices(String fileName)
 				DID = D[j]["ID"];
         
 
-        /* create a dictionnary of HTML elements ID's suffix / DeviceType*/
+        /* create a dictionnary of HTML elements ID's suffix <-> LogType */
         JsonObject Cells = DT[D[j]["Type"]];     
         for (JsonPair kv : Cells) {
 					snprintf(keyStr, sizeof(keyStr), "%s_%d_%d",kv.key().c_str(),PID,DID);
@@ -423,12 +423,7 @@ bool fillDevices(String fileName)
         Peers[i].controlIds[j] = 0;
       }
 		}
-    //print_m();
-    
-    //printPeers("After fillDevices");
-	  
     dataFile.close();
-    
     return true;
   } else {
     Serial.print("Error reading ");
@@ -441,14 +436,11 @@ bool fillDevices(String fileName)
 uint8_t getDeviceType(uint8_t PeerID, uint8_t DeviceID)
 {
   //Serial.println("getDeviceType");
-  for (int i = 0; i < Peers.size(); i++)
-  {
+  for (int i = 0; i < Peers.size(); i++){
     if (Peers[i].PeerID == PeerID)
-    {
-      for (int j = 0; j < 12; j++)
+    {for (int j = 0; j < 12; j++)
       {
-        if (Peers[i].deviceIds[j] == DeviceID)
-        {
+        if (Peers[i].deviceIds[j] == DeviceID){
           return Peers[i].deviceTypes[j];
         }
       }
