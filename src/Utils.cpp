@@ -13,8 +13,6 @@
 esp_now_peer_info_t slave;
 struct_ping pingData = {};
 
-
-
 String peersFilename = "/peersList.js";
 
 
@@ -357,19 +355,6 @@ uint8_t *PeerIDtoMAC(uint8_t PeerID)
   return r;
 }
 
-void print_m()
-{
-  Serial.println("Data to log");
-  for (SuffixToLogType_Map_it = SuffixToLogType_Map.begin();SuffixToLogType_Map_it != SuffixToLogType_Map.end(); SuffixToLogType_Map_it++) {
-      if (SuffixToLogType_Map_it->second.c_str() > "") {
-        Serial.print(SuffixToLogType_Map_it-> first.c_str());
-        Serial.print(" = ");
-        Serial.println(SuffixToLogType_Map_it->second.c_str());
-      }
-  }
-  Serial.println("End of Data to log");
-}
-
 //  Create a list of all devices from congiguration file
 bool fillDevices(String fileName)
 {
@@ -496,8 +481,6 @@ void showDirectory()
 }
 
 void copyLittleFStoSD()
-
-
 {
   File root = LittleFS.open("/");
   File f = root.openNextFile();

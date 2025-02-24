@@ -67,8 +67,6 @@ void copyLittleFStoSD();
 
 void checkMem();
 
-void print_m();
-
 void ReadRTCdata();
 
 
