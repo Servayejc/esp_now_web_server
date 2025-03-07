@@ -5,13 +5,19 @@
 #include <ArduinoJson.h>
 #include <map>
 
-void printTime();
-void initSD();
-void addToLogData(std::string key, float value);
-void processLogger();
+class Logger  {
+    public:
+        Logger();
+        void initSD();
+        void addToLogData(std::string key, float value);
+        void processLogger();
+        void printInt(uint8_t data);
+    private: 
+            //void printTime();
+        void saveOnSD(String fileName, String Data);
+        bool logDataOnSD();
+};    
 
-void saveOnSD(String fileName, String Data);
-//bool logDataOnSD(tm timeinfo);
-
+extern Logger LOG;
 
 #endif

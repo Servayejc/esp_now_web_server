@@ -1,9 +1,9 @@
-
+#include "Logger.h"
 #include <ArduinoJson.h>
 #include <esp_now.h>
 #include <esp_wifi.h>
 #include <LittleFS.h>
-#include "Logger.h"
+
 #include <SD.h>
 #include "global.h"
 #include "Config.h"
@@ -26,6 +26,7 @@ std::map<std::string, std::string>::iterator SuffixToLogType_Map_it;
 std::map<std::string, struct_LogTemp>::iterator it;
 
 #define LED 2
+
 
 // ESP_NOW message received from a peer
 void ProcessDataReceived(const uint8_t *mac_addr, const uint8_t *incomingData, int len)
@@ -121,7 +122,8 @@ void ProcessDataReceived(const uint8_t *mac_addr, const uint8_t *incomingData, i
             Serial.print("  Value = ");
             Serial.println(kv.value().as<const char*>());
           #endif 
-          addToLogData((std::string) a->first.c_str(), kv.value().as<float>());
+          LOG.addToLogData((std::string) a->first.c_str(), kv.value().as<float>());
+         
         }
       }
     }
@@ -135,13 +137,22 @@ void ProcessDataReceived(const uint8_t *mac_addr, const uint8_t *incomingData, i
   }
 }
 
-void OnDataRecv(const uint8_t *mac_addr, const uint8_t *incomingData, int len)
+//typedef struct esp_now_recv_info {
+//    uint8_t * src_addr;                      /**< Source address of ESPNOW packet */
+//    uint8_t * des_addr;                      /**< Destination address of ESPNOW packet */
+//    wifi_pkt_rx_ctrl_t * rx_ctrl;            /**< Rx control info of ESPNOW packet */
+//} esp_now_recv_info_t;
+
+
+
+void OnDataRecv(const esp_now_recv_info* mac, const uint8_t *incomingData, int len) 
+//void OnDataRecv(const uint8_t *mac_addr, const uint8_t *incomingData, int len)
 {
   uint8_t type = incomingData[0];
   switch (type)
   {
   case DATA:
-    ProcessDataReceived(mac_addr, incomingData, len);
+    ProcessDataReceived(mac->src_addr, incomingData, len);
     break;
 
   case PING:
@@ -177,7 +188,7 @@ void OnDataRecv(const uint8_t *mac_addr, const uint8_t *incomingData, int len)
       {
         //Serial.print(pairingData.id);
         //printlnMAC(mac_addr);
-        addPeerToList(mac_addr, pairingData.id);
+        addPeerToList(mac->src_addr, pairingData.id);
         // getDevices(pairingData.id);
         pairingData.id = SERVER_ID;
         // Server is in AP_STA mode: peers need to send data to server soft AP MAC address
@@ -186,7 +197,7 @@ void OnDataRecv(const uint8_t *mac_addr, const uint8_t *incomingData, int len)
         #ifdef DEBUG_PAIRING
           printPairingData();
         #endif  
-        esp_now_send(mac_addr, (uint8_t *)&pairingData, sizeof(pairingData));
+        esp_now_send(mac->src_addr, (uint8_t *)&pairingData, sizeof(pairingData));
       }
     }
     break;
@@ -364,11 +375,17 @@ void startServer()
     if (xSemaphoreTake (xSemaphore, (50 * portTICK_PERIOD_MS))){
       int paramsNr = request->params(); 
       Serial.println(paramsNr);
-      AsyncWebParameter * p = request->getParam(0); 
-      Serial.println(p->value());
+      //AsyncWebParameter * p = request->getParam[0]; 
+
+      if (request->hasParam("FN")){ 
+        
+        request->getParam("FN")->value();
+        Serial.println(request->getParam("FN")->value());
+      }
+      Serial.println(request->getParam("FN")->value());
       
       #ifdef SERVER_TEST
-        File f = LittleFS.open(p->value());
+        File f = LittleFS.open(request->getParam("FN")->value());
       #else
         //initSD();
         File f = SD.open(p->value(),"r",false);

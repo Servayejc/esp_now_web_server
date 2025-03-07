@@ -10,7 +10,7 @@
 struct_LogTemp LT;
 std::map<std::string, struct_LogTemp> lt;
 
-bool loggerPresent = false;
+bool SDPresent = false;
 
 unsigned long starting = millis();
 
@@ -47,23 +47,25 @@ void clearSD(){
   Uses microSD adapter like Adafruit breakout board 254 and power it from the USB 5V to avoid problems 
   when mounting SD or intermittent readings or writing errrors.
 */
-void initSD()
+Logger::Logger(){};
+
+void Logger::initSD()
 {
   pinMode(CS, OUTPUT);
   SPI.end();
   SPI.begin(18, 19, 23, CS); 
   if (SD.begin(CS)) {
     Serial.println("SD Mounted");
-    loggerPresent = true;
+    SDPresent = true;
   } else {
     Serial.println("An Error has occurred while mounting SD"); 
   }
-  /*if (!loggerPresent) { 
+  if (!SDPresent) { 
     showError(13);
-  }  */
+  }  
 }
 
-void addToLogData(std::string key, float value)
+void  Logger::addToLogData(std::string key, float value)
 {
   auto a = lt.find(key);
   if(a!= lt.end()){
@@ -76,14 +78,22 @@ void addToLogData(std::string key, float value)
   } 
 };
 
-void saveOnSD(String fileName, String Data) {
+void Logger::saveOnSD(String fileName, String Data) {
   if (xSemaphoreTake (xSemaphore, (50 * portTICK_PERIOD_MS))) {
-    bool newfile = !SD.exists(fileName);
+    #ifdef SERVER_TEST
+      bool newfile = !LittleFS.exists(fileName);
+    #else   
+      bool newfile = !SD.exists(fileName);
+    #endif    
+    File dataFile = {}; 
     if (newfile) {
       Serial.print("Create new data file:  ");
       Serial.println(fileName);
-      File dataFile = SD.open(fileName, "w", true); 
-      
+      if (SDPresent) {
+        dataFile = LittleFS.open(fileName, "w", true);
+      }else{
+        dataFile = SD.open(fileName, "w", true); 
+      }
       // add JSON structure to new file
       if (dataFile) {
           dataFile.print("{\"Data\":[");
@@ -99,7 +109,11 @@ void saveOnSD(String fileName, String Data) {
       Serial.println("Data file already exists");
       Serial.println("C");
       // do not use "a" or "a+"" because seek don't work in this mode
-      File dataFile = SD.open(fileName, "r+");
+      if (SDPresent) {
+        dataFile = LittleFS.open(fileName, "r+");
+      }else{  
+        dataFile = SD.open(fileName, "r+");
+      }  
       if (dataFile) {
         // erase "]}" at the end of the file
         Serial.println("Data file is opened ");
@@ -122,7 +136,7 @@ void saveOnSD(String fileName, String Data) {
 }
 
 
-bool logDataOnSD()
+bool Logger::logDataOnSD()
 {   
   tm timeinfo;
   // File name is based on Local Time  
@@ -171,14 +185,17 @@ bool logDataOnSD()
       Serial.println();
     #endif  
     serializeJson(root, payload);
-    if (loggerPresent) {
-      saveOnSD(fileName, payload);
-    }  
+    saveOnSD(fileName, payload);
   }
   return true;
 }
 
-void processLogger()
+void Logger::printInt(uint8_t data){
+  Serial.print("----- ");
+  Serial.println(data);
+}
+
+void Logger::processLogger()
 {
     struct tm LocalTimeinfo;
     getLocalTime(&LocalTimeinfo);

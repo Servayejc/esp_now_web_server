@@ -22,8 +22,6 @@
 //#define DEBUG_MEM
 //#define DEBUG_TIME
 
-//#define SERVER_TEST
-
 // Replace with your network credentials (STATION)
 static const char *ssid = "COGECO-BE360";
 static const char *password = "3FEADCOGECO";

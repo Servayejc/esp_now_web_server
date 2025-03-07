@@ -10,6 +10,7 @@
 //#include "esp_event_loop.h"
 #include "nvs_flash.h"
 #include "driver/gpio.h"
+#include "Logger.h"
 #include <Arduino.h>
 #include <Wire.h>
 
@@ -21,7 +22,7 @@
 
 #include <time.h>
 #include <SD.h>
-#include "logger.h"
+
 //#include "HQ.cpp"
 #include "AsyncTCP.h"
 #include "Config.h"
@@ -46,6 +47,7 @@ HTTPClient http;
 unsigned long start;
 bool serverReset = false;
 SemaphoreHandle_t xSemaphore;
+Logger LOG;
 
 int8_t rssi = 0;
 
@@ -167,9 +169,7 @@ void setup()
     Serial.println(" bytes");  
   #endif
   delay(1000);
-  
-  initSD();
-
+  LOG.initSD(); 
   #ifdef DEBUG_LITTLEFS
     Serial.print("Card Type : ");
     Serial.println(SD.cardType());
@@ -235,6 +235,6 @@ void loop()
     #ifdef DEBUG_TIME
        printTime();
     #endif
-    processLogger();
+    LOG.processLogger();
   }
 }
