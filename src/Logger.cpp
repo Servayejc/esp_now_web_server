@@ -60,9 +60,11 @@ void Logger::initSD()
   } else {
     Serial.println("An Error has occurred while mounting SD"); 
   }
-  if (!SDPresent) { 
-    showError(13);
-  }  
+  #ifndef SERVER_TEST
+    if (!SDPresent) { 
+      showError(13);
+    }
+  #endif  
 }
 
 void  Logger::addToLogData(std::string key, float value)
@@ -107,7 +109,6 @@ void Logger::saveOnSD(String fileName, String Data) {
     else
     {  // file exists
       Serial.println("Data file already exists");
-      Serial.println("C");
       // do not use "a" or "a+"" because seek don't work in this mode
       if (SDPresent) {
         dataFile = LittleFS.open(fileName, "r+");
