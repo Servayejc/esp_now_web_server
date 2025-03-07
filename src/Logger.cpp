@@ -191,11 +191,6 @@ bool Logger::logDataOnSD()
   return true;
 }
 
-void Logger::printInt(uint8_t data){
-  Serial.print("----- ");
-  Serial.println(data);
-}
-
 void Logger::processLogger()
 {
     struct tm LocalTimeinfo;

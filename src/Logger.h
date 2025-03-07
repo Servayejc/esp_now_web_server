@@ -11,9 +11,7 @@ class Logger  {
         void initSD();
         void addToLogData(std::string key, float value);
         void processLogger();
-        void printInt(uint8_t data);
     private: 
-            //void printTime();
         void saveOnSD(String fileName, String Data);
         bool logDataOnSD();
 };    
