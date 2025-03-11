@@ -64,6 +64,15 @@ void Logger::initSD()
     if (!SDPresent) { 
       showError(13);
     }
+  #endif
+  #ifdef DEBUG_FS
+    Serial.print("Card Type : ");
+    Serial.println(SD.cardType());
+    Serial.print("SD Mounted Total: ");
+    Serial.print(SD.totalBytes()/1024);
+    Serial.print(" Used: ");
+    Serial.print(SD.usedBytes()/1024);
+    Serial.println(" bytes");  
   #endif  
 }
 
@@ -81,7 +90,8 @@ void  Logger::addToLogData(std::string key, float value)
 };
 
 void Logger::saveOnSD(String fileName, String Data) {
-  if (xSemaphoreTake (xSemaphore, (50 * portTICK_PERIOD_MS))) {
+  if (xSemaphoreTake (xSemaphore, (500 * portTICK_PERIOD_MS))) {
+ // if (true) {  
     #ifdef SERVER_TEST
       bool newfile = !LittleFS.exists(fileName);
     #else   
@@ -92,9 +102,11 @@ void Logger::saveOnSD(String fileName, String Data) {
       Serial.print("Create new data file:  ");
       Serial.println(fileName);
       if (SDPresent) {
-        dataFile = LittleFS.open(fileName, "w", true);
+        dataFile = SD.open(fileName, "w", true);
+        Serial.println("SD");
       }else{
-        dataFile = SD.open(fileName, "w", true); 
+        dataFile = LittleFS.open(fileName, "w", true);
+        Serial.println("LittleFS"); 
       }
       // add JSON structure to new file
       if (dataFile) {
@@ -111,9 +123,9 @@ void Logger::saveOnSD(String fileName, String Data) {
       Serial.println("Data file already exists");
       // do not use "a" or "a+"" because seek don't work in this mode
       if (SDPresent) {
-        dataFile = LittleFS.open(fileName, "r+");
-      }else{  
         dataFile = SD.open(fileName, "r+");
+      }else{  
+        dataFile = LittleFS.open(fileName, "r+");
       }  
       if (dataFile) {
         // erase "]}" at the end of the file
@@ -146,7 +158,7 @@ bool Logger::logDataOnSD()
   #ifdef DEBUG_LOGGER
     printLocalTime();
   #endif
-  sprintf(fileName, "/%02d_%02d.JSN", timeinfo.tm_mon + 1, timeinfo.tm_mday);
+  sprintf(fileName, "/%04d_%02d_%02d.JSN", 1900+timeinfo.tm_year, timeinfo.tm_mon + 1, timeinfo.tm_mday);
   #ifdef DEBUG_LOGGER
     Serial.println(fileName); 
   #endif
@@ -190,6 +202,7 @@ bool Logger::logDataOnSD()
   }
   return true;
 }
+
 
 void Logger::processLogger()
 {

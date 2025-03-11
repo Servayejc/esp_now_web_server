@@ -15,24 +15,16 @@ uint8_t shortPulses = 0;
 /* error codes
 11 Wifi can not connect
 12 SD not mounted
-  
-
 */
 
 void blink();
 TickTwo timer(blink, 1);
 
 /* the error code must contains 2 digits between 1 and 9 */
-
-
-
 void showError(uint8_t code){
     code2 = code;
     longPulses = 2 * (code / 10);
     shortPulses = 2 * (code % 10);
-    /*Serial.println(longPulses);
-    Serial.println(shortPulses);*/
-
     pinMode(ledPin, OUTPUT);
     ledState = 1;
     digitalWrite(ledPin, ledState);  // led ON

@@ -424,10 +424,12 @@ async function fetchData(url) {
 
 function getGraphData(){
 	e = document.getElementById("logDate");
+	console.log("date ");
+	console.log(e.value);
 	const m = e.value.split("-");
     //url = URL + "/readFile?FN=/" + (pad(m[1],2) + "_"+pad(m[2],2)) + ".JSN";		// TO REMOVE
 	
-	url = getURL() + "/readFile?FN=/" + (pad(m[1],2) + "_"+pad(m[2],2)) + ".JSN";			
+	url = getURL() + "/readFile?FN=/" + (pad(m[0],4)+"_" + pad(m[1],2) + "_"+pad(m[2],2)) + ".JSN";			
 	
 	console.log(url);
 	fetchData(url);

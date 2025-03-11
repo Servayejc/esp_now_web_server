@@ -388,7 +388,7 @@ void startServer()
         File f = LittleFS.open(request->getParam("FN")->value());
       #else
         //initSD();
-        File f = SD.open(p->value(),"r",false);
+        File f = SD.open(request->getParam("FN")->value(),"r",false);
       #endif  
       if (!f) {
         Serial.println ("Log file not found");

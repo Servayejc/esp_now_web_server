@@ -170,15 +170,7 @@ void setup()
   #endif
   delay(1000);
   LOG.initSD(); 
-  #ifdef DEBUG_LITTLEFS
-    Serial.print("Card Type : ");
-    Serial.println(SD.cardType());
-    Serial.print("SD Mounted Total: ");
-    Serial.print(SD.totalBytes()/1024);
-    Serial.print(" Used: ");
-    Serial.print(SD.usedBytes()/1024);
-    Serial.println(" bytes");  
-  #endif
+  
   
   // Initilaze MDNS (Bonjour) 
   while (!MDNS.begin(hostName))
@@ -210,6 +202,9 @@ void setup()
 
   addPeerToESPNOW(broadcastAddressX);
 }
+
+
+
 
 void loop()
 { 
