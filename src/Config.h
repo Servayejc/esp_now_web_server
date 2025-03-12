@@ -1,16 +1,16 @@
 #ifndef CONFIG_H_
 #define CONFIG_H_
 
-#define DEBUG_WIFI
-#define DEBUG_LITTLEFS
-#define DEBUG_FS
+//#define DEBUG_WIFI
+//#define DEBUG_LITTLEFS
+//#define DEBUG_FS
 //#define DEBUG_DIRECTORY
-#define DEBUG_LOGGER
+//#define DEBUG_LOGGER
 //#define DEBUG_DATA_RECEIVED
 //#define DEBUG_EVENTS_SEND
 //#define DEBUG_PING
 //#define DEBUG_LOAD_PEERS
-#define DEBUG_SAVE_PEERS
+//#define DEBUG_SAVE_PEERS
 //#define DEBUG_PRINT_PEERS
 //#define DEBUG_DATA_STRUCTURE
 //#define DEBUG_SETPOINTS

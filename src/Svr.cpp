@@ -160,7 +160,7 @@ void OnDataRecv(const esp_now_recv_info* mac, const uint8_t *incomingData, int l
     memcpy(&pingData, incomingData, sizeof(pingData));
 #ifdef DEBUG_PING
     Serial.print("Ping response from ");
-    printMAC(mac_addr);
+    printMAC(mac->src_addr);
     Serial.print(" in ");
     Serial.print(millis() - pingTime);
     Serial.println(" ms ");
@@ -171,7 +171,7 @@ void OnDataRecv(const esp_now_recv_info* mac, const uint8_t *incomingData, int l
     memcpy(&pairingData, incomingData, sizeof(pairingData));
     #ifdef DEBUG_PAIRING
       Serial.print("Pairing request from: ");
-      printlnMAC(mac_addr);
+      printlnMAC(mac->src_addr);
     #endif  
     StaticJsonDocument<1000> root;
     root["msgType"] = pairingData.msgType;
@@ -370,10 +370,8 @@ String processor(const String& var) {
 
 void startServer()
 {
-  
- 
   server.on("/readFile", HTTP_GET, [](AsyncWebServerRequest* request) {
-    if (xSemaphoreTake (xSemaphore, (50 * portTICK_PERIOD_MS))){
+   if (xSemaphoreTake (xSemaphore, (50 * portTICK_PERIOD_MS))){
       int paramsNr = request->params(); 
       Serial.println(paramsNr);
       //AsyncWebParameter * p = request->getParam[0]; 

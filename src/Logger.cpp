@@ -90,8 +90,7 @@ void  Logger::addToLogData(std::string key, float value)
 };
 
 void Logger::saveOnSD(String fileName, String Data) {
-  if (xSemaphoreTake (xSemaphore, (500 * portTICK_PERIOD_MS))) {
- // if (true) {  
+  if (xSemaphoreTake (xSemaphore, (50 * portTICK_PERIOD_MS))) {
     #ifdef SERVER_TEST
       bool newfile = !LittleFS.exists(fileName);
     #else   
