@@ -1,38 +1,29 @@
 #include <esp_now.h>
 #include <WiFi.h>
-#include <esp_wifi.h>
-#include <DataBase.h>
+#include <Arduino.h>
+#include "ESPAsyncWebServer.h"
+#include "AsyncTCP.h"
+
 #include "freertos/FreeRTOS.h"
 #include "esp_wifi.h"
 #include "esp_wifi_types.h"
 #include "esp_system.h"
 #include "esp_event.h"
-//#include "esp_event_loop.h"
-#include "nvs_flash.h"
-#include "driver/gpio.h"
-#include "Logger.h"
-#include <Arduino.h>
-#include <Wire.h>
 
-#include "ESPAsyncWebServer.h"
-#include "AsyncTCP.h"
 #include <ArduinoJson.h>
 #include <ESPmDNS.h>
-#include <LittleFS.h>
-
 #include <time.h>
-#include <SD.h>
+#include <FS.h>
 
-//#include "HQ.cpp"
-#include "AsyncTCP.h"
+#include <flashLed.h>
+#include "Logger.h"
 #include "Config.h"
 #include "Svr.h"
 #include "global.h"
 #include "Utils.h"
-#include <FS.h>
-#include <flashLed.h>
-#include <HTTPClient.h>
+#include <DataBase.h>
 
+//#include "HQ.cpp"
 
 #define BitVal(data,y) ( (data>>y) & 1) 
 
@@ -42,8 +33,6 @@ int led = 0;
 
 
 #define LED 2
-
-HTTPClient http;
 
 unsigned long start;
 bool serverReset = false;
@@ -204,9 +193,6 @@ void setup()
   Serial.println("Server started");   
   //DB:addPeerToESPNOW(broadcastAddressX);
 }
-
-
-
 
 void loop()
 { 
