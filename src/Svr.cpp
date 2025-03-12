@@ -10,6 +10,7 @@
 #include "Utils.h"
 #include "print.h"
 #include "Svr.h"
+#include "DataBase.h"
 
 
 AsyncWebServer server(serverPort);  
@@ -38,7 +39,7 @@ void ProcessDataReceived(const uint8_t *mac_addr, const uint8_t *incomingData, i
   StaticJsonDocument<1000> root;
   String payload;
   uint8_t type = incomingData[0]; // first message byte is the type of message
-  int PeerID = macToPeerID(mac_addr);
+  int PeerID = DB.macToPeerID(mac_addr);
 
 #ifdef DEBUG_DATA_RECEIVED
    printlnMAC(mac_addr);
@@ -188,7 +189,7 @@ void OnDataRecv(const esp_now_recv_info* mac, const uint8_t *incomingData, int l
       {
         //Serial.print(pairingData.id);
         //printlnMAC(mac_addr);
-        addPeerToList(mac->src_addr, pairingData.id);
+        DB.addPeerToList(mac->src_addr, pairingData.id);
         // getDevices(pairingData.id);
         pairingData.id = SERVER_ID;
         // Server is in AP_STA mode: peers need to send data to server soft AP MAC address
@@ -219,7 +220,7 @@ void initESP_NOW()
 
 void sendSetPoints(int8_t peerId)
 {
-  uint8_t *mac_addr = PeerIDtoMAC(peerId);
+  uint8_t *mac_addr = DB.PeerIDtoMAC(peerId);
   #ifdef DEBUG_SETPOINTS
     Serial.print("SendSetPoints to peer ");
     Serial.print(peerId);
@@ -264,7 +265,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len, int clientID)
 
     setpoints.msgType = SETPOINTS;
     setpoints.deviceId = root["DevID"];
-    setpoints.deviceType = getDeviceType(root["peerID"], root["DevID"]);
+    setpoints.deviceType = DB.getDeviceType(root["peerID"], root["DevID"]);
     setpoints.U1 = root["value"];
 
     #ifdef DEBUG_SETPOINTS

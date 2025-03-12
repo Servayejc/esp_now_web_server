@@ -1,7 +1,7 @@
 #include <esp_now.h>
 #include <WiFi.h>
 #include <esp_wifi.h>
-
+#include <DataBase.h>
 #include "freertos/FreeRTOS.h"
 #include "esp_wifi.h"
 #include "esp_wifi_types.h"
@@ -33,6 +33,7 @@
 #include <flashLed.h>
 #include <HTTPClient.h>
 
+
 #define BitVal(data,y) ( (data>>y) & 1) 
 
 int pingID = 0;
@@ -48,6 +49,7 @@ unsigned long start;
 bool serverReset = false;
 SemaphoreHandle_t xSemaphore;
 Logger LOG;
+DataBase DB;
 
 int8_t rssi = 0;
 
@@ -190,17 +192,17 @@ void setup()
   // initialize ESPNOW 
   initESP_NOW();
   
-  // read structure for all peers and all devices
-  if (fillDevices("/Struct.json")){ 
-    Serial.println("Devices Loaded");
-    loadPeers();       
-  }
-  
+  Serial.println("========================");
+ // DB.fillDevices("/Struct.json");
+ // DB.loadPeers();
+  DB.init("/Struct.json", "/peersList.js");
+
+  Serial.println("========================");
+   
   Serial.println("Starting server");
   startServer(); 
   Serial.println("Server started");   
-
-  addPeerToESPNOW(broadcastAddressX);
+  //DB:addPeerToESPNOW(broadcastAddressX);
 }
 
 
