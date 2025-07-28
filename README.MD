@@ -1,3 +1,11 @@
+Hitron modem settings
+
+- set port forwarding
+	VESTA	80~80	80~80	TCP	192.168.0.100	Any
+- set DHCP
+	VESTA   192.168.0.100   Server MAC Address	
+
+
 
 
 Description du projet

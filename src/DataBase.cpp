@@ -107,12 +107,12 @@ bool DataBase::addPeerToESPNOW(const uint8_t *peer_addr){
 }
 
 bool DataBase::addPeerToList(const uint8_t *mac_addr, int8_t PeerID){
-  //#ifdef DEBUG_PAIRING
+  #ifdef DEBUG_PAIRING
    // printLocalTime();
     Serial.print("Add peer to list  PeerID : ");
     Serial.println(PeerID);
     //printlnMAC(mac_addr);
-  //#endif  
+  #endif  
   int ndx = -1;
   
   //#ifdef DEBUG_PAIRING
@@ -378,9 +378,11 @@ uint8_t DataBase::getDeviceType(uint8_t PeerID, uint8_t DeviceID){
 
 void DataBase::fillPairingData(uint8_t PeerID)
 { 
-  Serial.print("Fill pairing data for PeerID ");
-  Serial.print(PeerID);
-  Serial.println();
+  #ifdef DEBUG_PAIRING
+    Serial.print("Fill pairing data for PeerID ");
+    Serial.print(PeerID);
+    Serial.println();
+  #endif 
   
   for (int i = 0; i < Peers.size(); i++)
   {

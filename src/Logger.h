@@ -21,9 +21,23 @@ class Logger  {
         void initSD();
         void addToLogData(std::string key, float value);
         void processLogger();
+        bool logData();
+        bool isPresent();
+        void printTime();
+        void clearSD();
+        bool saveOnSD(String fileName, String Data);
+        bool saveOnSD_old(String fileName, String Data);
     private: 
-        void saveOnSD(String fileName, String Data);
+        void createFileName();
+        bool createNewFile(String fileName, String Data);
+        bool prepareData();
         bool logDataOnSD();
+        bool dataPrepared;
+        bool logged;
+        bool SDPresent;
+        char fileName[25];
+        char utc[25];
+        char payload[2000];
 };    
 
 extern Logger LOG;

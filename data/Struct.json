@@ -1,5 +1,10 @@
 {
 	"Peers":[
+        {   "PeerID": 1,
+            "Devices":[
+                    {"ID":1, "Type":"1", "Title":"Piscine","CtrlID":"0"}
+            ]
+        },        
         {   "PeerID": 2,
             "Devices":[
                     {"ID":1, "Type":"0", "Title":"Poules", "CtrlID":"9", "SP":"8", "Hyst":"1"}
@@ -16,14 +21,8 @@
                     {"ID":6, "Type":"0", "Title":"7", "CtrlID":"4"},
                     {"ID":7, "Type":"0", "Title":"8", "CtrlID":"0"}
             ]
-        },
-            
-        {   "PeerID": 4,
-            "Devices":[
-                    {"ID":1, "Type":"1", "Title":"Piscine"}
-            ]
         }
-    ],
+        ],
 
     "DataTypes":[
             {"Title":"", "F1": "L", "F2": "", "U1": "T", "up":"", "down":"", "MsgID":""},
@@ -44,11 +43,11 @@
             "28:7e:c6:38:0a:00:00:15":"Salon",          
             "28:27:be:54:03:00:00:f2":"Foyer",          
             "28:5f:ca:54:03:00:00:b9":"Chambre 5",        
-               
             "28:44:ca:54:03:00:00:1a":"SDB Haut",   
             "28:9c:13:97:05:00:00:b2":"Exterieur",  
             "28:bc:03:4d:03:00:00:b3":"Chambre 4",  
-            "28:b6:ea:96:05:00:00:11":"SDB Bas"      
+            "28:b6:ea:96:05:00:00:11":"SDB Bas",     
+            "28:ff:71:b2:c0:17:01:f1":"Piscine" 
             } 
         ]
 }

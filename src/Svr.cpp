@@ -11,7 +11,7 @@
 #include "print.h"
 #include "Svr.h"
 #include "DataBase.h"
-
+#include "Logger.h"
 
 AsyncWebServer server(serverPort);  
 AsyncEventSource events("/events");
@@ -136,6 +136,7 @@ void ProcessDataReceived(const uint8_t *mac_addr, const uint8_t *incomingData, i
     Serial.println();
 #endif
   }
+  //stopTime();
 }
 
 //typedef struct esp_now_recv_info {
@@ -149,6 +150,7 @@ void ProcessDataReceived(const uint8_t *mac_addr, const uint8_t *incomingData, i
 void OnDataRecv(const esp_now_recv_info* mac, const uint8_t *incomingData, int len) 
 //void OnDataRecv(const uint8_t *mac_addr, const uint8_t *incomingData, int len)
 {
+  //startTime();
   uint8_t type = incomingData[0];
   switch (type)
   {
@@ -368,12 +370,14 @@ String processor(const String& var) {
 }
 
 
-void startServer()
+  void startServer()
 {
   server.on("/readFile", HTTP_GET, [](AsyncWebServerRequest* request) {
-   if (xSemaphoreTake (xSemaphore, (50 * portTICK_PERIOD_MS))){
+    if( xSemaphoreTake( xSemaphore, (150 * portTICK_PERIOD_MS) == pdTRUE)){
+     // Serial.println("xSemaphoreTake by Server");
+      //Serial.println(request->client()->remoteIP());
       int paramsNr = request->params(); 
-      Serial.println(paramsNr);
+      //Serial.println(paramsNr);
       //AsyncWebParameter * p = request->getParam[0]; 
 
       if (request->hasParam("FN")){ 
@@ -384,7 +388,7 @@ void startServer()
       Serial.println(request->getParam("FN")->value());
       
       #ifdef SERVER_TEST
-        File f = LittleFS.open(request->getParam("FN")->value());
+        File f = LittleFS.open(request->getParam("FN")->value(),"r", false);
       #else
         //initSD();
         File f = SD.open(request->getParam("FN")->value(),"r",false);
@@ -405,7 +409,30 @@ void startServer()
       Serial.println("Log file Locked");
     }
     xSemaphoreGive (xSemaphore);
-  });
+   // Serial.println("xSemaphoreGive by Server");
+});
+
+server.on("/updateFile", HTTP_GET, [](AsyncWebServerRequest* request) {
+  //Serial.println(request->client()->remoteIP());
+  int paramsNr = request->params(); 
+  //Serial.println(paramsNr);
+  //AsyncWebParameter * p = request->getParam[0]; 
+  if (paramsNr == 2){
+    if (request->hasParam("FN")){ 
+      request->getParam("FN")->value();
+      Serial.println(request->getParam("FN")->value());
+    }
+    if (request->hasParam("Data")){ 
+      request->getParam("Data")->value();
+      Serial.println(request->getParam("Data")->value());
+    }
+    LOG.saveOnSD(request->getParam("FN")->value(), request->getParam("Data")->value());  
+    request->send(200);
+  }
+});
+
+  
+
 
   //server.on("/vest", HTTP_GET, [](AsyncWebServerRequest *request)
     //        { request->send(LittleFS, "/test.htm", String(), false, processor); });
@@ -439,8 +466,9 @@ void startServer()
   
   // send event with message "hello!"
   // and set reconnect delay to 10 second
-  client->send("hello!", NULL, millis(), 10000); });
-
+  //client->send("hello!", NULL, millis(), 10000); 
+  });
+  
   server.addHandler(&events);
   DefaultHeaders::Instance().addHeader("Access-Control-Allow-Origin", "*");
   DefaultHeaders::Instance().addHeader("Access-Control-Allow-Methods", "GET, POST, PUT");

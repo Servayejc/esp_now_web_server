@@ -4,10 +4,21 @@
 #include <LittleFS.h>
 #include <SD.h>
 #include <print.h>
+#include "config.h"
+#include <arduino.h>
 
 esp_now_peer_info_t slave;
 struct_ping pingData = {};
 
+unsigned long elapsedTime = 0;
+
+void startTime(){
+  elapsedTime = millis();
+}
+
+void stopTime(){
+  Serial.println(millis() - elapsedTime);  
+}
 
 void getUtcTime(struct tm * info){
     time_t now;
@@ -83,6 +94,30 @@ void copyLittleFStoSD()
   }
   root.close();
 }
+
+bool printFile(String fileName){
+  #ifdef DEBUG_LOGGER_DATA
+    File file = SD.open(fileName);
+    if (!file) {
+      Serial.println("Failed to open file for reading.");
+      return false;
+    }
+    Serial.println("=================================");
+    Serial.println("File content:");
+    // Read and print the file content
+    while (file.available()) {
+      Serial.write(file.read());
+    }
+    Serial.println();
+    Serial.println("=================================");
+    // Close the file
+    file.close();
+  #endif  
+  return true;
+}
+
+
+
 
 
 

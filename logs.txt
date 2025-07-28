@@ -1,0 +1,64 @@
+
+20:20:09.970 > --- Heap size : 149668
+20:20:14.070 > Guru Meditation Error: Core  1 panic'ed (LoadProhibited). Exception was unhandled.
+20:20:14.071 >
+20:20:14.071 > Core  1 register dump:
+20:20:14.071 > PC      : 0x400de2d4  PS      : 0x00060330  A0      : 0x800de721  A1      : 0x3ffe8510  
+20:20:14.097 > A2      : 0x3ffdf3e0  A3      : 0x000000b5  A4      : 0xb33fffff  A5      : 0x3ffdc804  
+20:20:14.109 > A6      : 0x00000000  A7      : 0x00000000  A8      : 0x800de2ec  A9      : 0x3ffe84f0      
+20:20:14.121 > A10     : 0x00000018  A11     : 0x00000028  A12     : 0x00000000  A13     : 0x3ffc79f8      
+20:20:14.126 > A14     : 0x3ffdf0b4  A15     : 0x3ffdfbd4  SAR     : 0x00000015  EXCCAUSE: 0x0000001c  
+20:20:14.144 > EXCVADDR: 0x00000000  LBEG    : 0x40089ed0  LEND    : 0x40089ee6  LCOUNT  : 0xffffffff      
+20:20:14.157 >
+20:20:14.157 >
+20:20:14.159 > Backtrace: 0x400de2d1:0x3ffe8510 0x400de71e:0x3ffe8530 0x400e1bc5:0x3ffe8550 0x400dd777:0x3ffe8570 0x400dd783:0x3ffe8590 0x4017ea7e:0x3ffe85b0 0x4017ef26:0x3ffe85e0 0x4017f197:0x3ffe8610 0x4008eeaa:0x3ffe8640
+  #0  0x400de2d1 in std::deque<AsyncWebSocketControl, std::allocator<AsyncWebSocketControl> >::_M_destroy_data(std::_Deque_iterator<AsyncWebSocketControl, AsyncWebSocketControl&, AsyncWebSocketControl*>, std::_Deque_iterator<AsyncWebSocketControl, AsyncWebSocketControl&, AsyncWebSocketControl*>, std::allocator<AsyncWebSocketControl> const&) at C:/Users/JCS/.platformio/packages/toolchain-xtensa-esp-elf/xtensa-esp-elf/include/c++/13.2.0/bits/stl_deque.h:2091
+  #1  0x400de71e in AsyncWebSocketClient::AsyncWebSocketClient(AsyncWebServerRequest*, AsyncWebSocket*) at 
+.pio/libdeps/esp32/ESPAsyncWebServer/src/AsyncWebSocket.cpp:289 (discriminator 1)
+  #2  0x400e1bc5 in StringSumHelper::~StringSumHelper() at C:/Users/JCS/.platformio/packages/framework-arduinoespressif32/cores/esp32/WString.h:399
+      (inlined by) AsyncBasicResponse::_respond(AsyncWebServerRequest*) at .pio/libdeps/esp32/ESPAsyncWebServer/src/WebResponses.cpp:282
+  #3  0x400dd777 in AsyncWebSocketResponse::AsyncWebSocketResponse(String const&, AsyncWebSocket*) at .pio/libdeps/esp32/ESPAsyncWebServer/src/AsyncWebSocket.cpp:1218 (discriminator 4)
+  #4  0x400dd783 in AsyncWebSocketResponse::AsyncWebSocketResponse(String const&, AsyncWebSocket*) at .pio/libdeps/esp32/ESPAsyncWebServer/src/AsyncWebSocket.cpp:1218 (discriminator 4)
+  #5  0x4017ea7e in NetworkInterface::config(IPAddress, IPAddress, IPAddress, IPAddress, IPAddress, IPAddress) at C:/Users/JCS/.platformio/packages/framework-arduinoespressif32/libraries/Network/src/NetworkInterface.cpp:481 (discriminator 14)
+  #6  0x4017ef26 in NetworkInterface::dnsIP(unsigned char) const at C:/Users/JCS/.platformio/packages/framework-arduinoespressif32/libraries/Network/src/NetworkInterface.cpp:690
+  #7  0x4017f197 in NetworkInterface::printTo(Print&) const at C:/Users/JCS/.platformio/packages/framework-arduinoespressif32/libraries/Network/src/NetworkInterface.cpp:826 (discriminator 4)
+  #8  0x4008eeaa in vPortTaskWrapper at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:139
+
+20:20:14.179 >
+20:20:16.215 >
+20:20:16.215 >
+20:20:16.215 >
+20:20:16.215 > ELF file SHA256: baa7444e8
+20:20:16.215 >
+20:20:16.215 > Rebooting...
+20:20:16.215 > 1�|mlh%a �tr73L(�tRdn#nbbnxnh �|'[p*%&�N8|?�X,tPtP'tP*tP7n�X,l �ubn@)~zP5 �r-
+%*val �r-,,�a.4�r-,,�an �A,nzA.�*n �r-,.�am �t�P,D41055
+20:20:16.215 >
+20:20:16.215 > Firmware Version: v0.1.5
+20:20:17.972 > Setting as a Wi-Fi Station...
+20:20:17.972 > Server SOFT AP MAC Address:  10:06:1C:87:8A:B5
+20:20:17.972 > Server MAC Address:  10:06:1C:87:8A:B4
+20:20:17.989 > Station IP Address: 192.168.0.100
+20:20:17.994 > Wi-Fi Channel: 11
+20:20:17.997 > Mode: STA+AP
+20:20:17.999 > Channel: 11
+20:20:18.000 > SSID (12): COGECO-BE360
+20:20:18.004 > Passphrase (11): 3FEADCOGECO
+20:20:18.009 > BSSID set: 0
+20:20:19.023 > SD Mounted
+20:20:19.023 > Starting mDNS...
+20:20:19.023 > MDNS started
+20:20:19.023 > Setting Timezone to EST5EDT,M3.2.0,M11.1.0
+20:20:19.039 > ESP-NOW initialyzed
+20:20:19.041 > ========================
+20:20:19.046 > Fill devices from /Struct.json
+20:20:19.059 > Config file Opened
+20:20:19.098 > Done
+20:20:19.111 > Loading Peers from /peersList.js
+20:20:19.195 > ========================
+20:20:19.198 > Starting server
+20:20:19.201 > Server started
+20:20:21.291 > Add peer to list  PeerID : 3
+20:20:21.296 > Fill pairing data for PeerID 3
+20:20:24.199 > --- Heap size : 163496
+20:20:29.199 > --- Heap size : 163156

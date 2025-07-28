@@ -398,9 +398,9 @@ function OnPairRQ(){
 }
 
 function OnTest(){
-	var js = {"peerID": 98 , "DevID":98 , "DevType":98 ,  "value" : 98};
-	console.log(JSON.stringify(js));
-	webSocket.send(JSON.stringify(js));
+	url = getURL() + "/updateFile?FN=/abc.TXT, DATA=1"; 
+	console.log(url);
+	fetchData(url);	
 	
 }
 
@@ -421,6 +421,10 @@ async function fetchData(url) {
 	console.log(data);
 	generateChart(data, Graph, cols, names);
   }
+
+function updateFile(){
+   
+}
 
 function getGraphData(){
 	e = document.getElementById("logDate");
