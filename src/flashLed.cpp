@@ -22,13 +22,6 @@ TickTwo timer(blink, 1);
 
 /* the error code must contains 2 digits between 1 and 9 */
 void showError(uint8_t code){
-    code2 = code;
-    longPulses = 2 * (code / 10);
-    shortPulses = 2 * (code % 10);
-    pinMode(ledPin, OUTPUT);
-    ledState = 1;
-    digitalWrite(ledPin, ledState);  // led ON
-    timer.start();void showError(uint8_t code) {
     if (code < 1 || code > 9) {
         Serial.println("Error: Code must be between 1 and 9");
         return; // Exit early if the code is invalid
@@ -39,10 +32,11 @@ void showError(uint8_t code){
     pinMode(ledPin, OUTPUT);
     ledState = 1;
     digitalWrite(ledPin, ledState);  // led ON
-    timer.start();
-}
+    timer.start(); 
     /*Serial.println("Started");*/
 }
+   
+
 
 void processBlink(){
   uint32_t interval = 0;   
