@@ -1,6 +1,5 @@
 #include <print.h>
 
-
 void printIncomingData(){
     Serial.print("msgType : ");
     Serial.println(incomingReadings.msgType);
