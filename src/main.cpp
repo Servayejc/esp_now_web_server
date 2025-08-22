@@ -49,10 +49,6 @@ void loop()
   {
     lastEventTime = millis();
     checkMem();
-
     LOG.processLogger();
   }
-  
-
-
-}
+ }

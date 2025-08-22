@@ -7,6 +7,8 @@
 #include "SPI.h" 
 #include "flashLed.h"
 
+
+
 struct_LogTemp LT;
 std::map<std::string, struct_LogTemp> lt;
 
@@ -14,7 +16,7 @@ std::map<std::string, struct_LogTemp> lt;
 unsigned long starting = millis();
 
 const int CS = 17;
-
+const int PWR = 4;
 
 /*
   Caution : micro-sd card needs up to 100mA when writing, do NOT uses 3.3V from esp32 board.
@@ -34,25 +36,46 @@ void Logger::printTime()
   Serial.println(&timeinfo, "%y-%m-%d %H:%M:%S");
 }
 
-void Logger::clearSD(){
-  byte sd = 0;
-  digitalWrite(CS, LOW);
-  while (sd != 255){
-    sd = SPI.transfer(255);
-    Serial.print("sd = ");
-    Serial.println(sd);
-    delay(100);
-  }
-  digitalWrite(CS, HIGH);
+bool Logger::checkSD(){
+  Serial.println(SD.cardType());
+  if (SD.cardType() != CARD_NONE){
+    return true;
+  } else {
+    Serial.println("SD card is NOT present");
+    initSD();
+    if (SDPresent){
+      Serial.println("SD card re-initialized");
+      return true;
+    } else { 
+      Serial.println("SD card is NOT re-initialized");
+      return false;
+    } 
+  }     
 }
 
+void Logger::powerOn(uint8_t pin){
+  pinMode(pin, OUTPUT);
+  digitalWrite(pin, HIGH);
+}
 
+void Logger::powerOff(uint8_t pin){
+  pinMode(pin, OUTPUT);
+  digitalWrite(pin, LOW);
+}  
 
 void Logger::initSD()
 {
   logged = false;
   SDPresent = false;
   pinMode(CS, OUTPUT);
+  powerOff(4);
+  // reset SD Card by power 
+  Serial.println("SD NOT POWERD");
+  delay(1000);
+  powerOn(4);
+  delay(1000);
+  Serial.println("SD POWERD");
+  //
   SPI.end();
   SPI.begin(18, 19, 23, CS);   // SPI.begin(18, 36, 26, CS); ???
   if (SD.begin(CS)) {
@@ -121,8 +144,8 @@ bool Logger::createNewFile(String fileName, String Data){
       dataFile.print("{\"Data\":[");
       dataFile.println();
       dataFile.print(Data);
-      dataFile.print("]}");
-      
+      dataFile.println("]}");
+  
       dataFile.flush();
       dataFile.close();
       result = true;
@@ -148,6 +171,7 @@ bool Logger::saveOnSD(String fileName, String Data) {
   
   if (newfile) {
     createNewFile(fileName, Data);
+    return true;
   } 
   #ifdef DEBUG_LOGGER
     Serial.println(Data);
@@ -171,12 +195,11 @@ bool Logger::saveOnSD(String fileName, String Data) {
     // erase "]}" at the end of the file
     Serial.println("Data file is opened ");
     //Serial.println(dataFile.size());
-    dataFile.seek(dataFile.size() - 2); 
+    dataFile.seek(dataFile.size() - 4); 
     // append data
-    dataFile.print(",");
-    dataFile.print(Data);
-    dataFile.println();
-    
+    dataFile.println(",");
+    dataFile.println(Data);
+           
     // rewrite closing "]}"
     dataFile.print("]}");
     dataFile.flush();
@@ -268,14 +291,17 @@ bool Logger::logData(){
   }
 }
 
+
 void Logger::processLogger() {
-	struct tm LocalTimeinfo;
+	checkSD();
+
+  struct tm LocalTimeinfo;
 	getLocalTime(&LocalTimeinfo);
 	if (LocalTimeinfo.tm_min % 15 == 0){
     if (!logged){
       //printLocalTime();
       if (prepareData()) {
-				if( xSemaphoreTake( xSemaphore, (200 * portTICK_PERIOD_MS) == pdTRUE)){
+				if( xSemaphoreTake( xSemaphore, (400 * portTICK_PERIOD_MS) == pdTRUE)){
 					Serial.println("get xSemaphoreTake by Logger");
 					if (logData()) {
 						logged = true;

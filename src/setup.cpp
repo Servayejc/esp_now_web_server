@@ -188,7 +188,7 @@ void doSetup()
 {
   // Initialize Serial Monitor
   Serial.begin(74880);
-  delay(1000);
+  delay(100);
   start = millis();
   Serial.println(start);
   Serial.println();
@@ -211,6 +211,7 @@ void doSetup()
   mountLittleFS();
 
   LOG.initSD(); 
+  
   
   startMDNS();
  
@@ -238,12 +239,12 @@ void doSetup()
   //DB:addPeerToESPNOW(broadcastAddressX);
   //showDirectory();
   
-  if (WiFi.localIP() == "192.168.0.200"){
+  /*if (WiFi.localIP() == "192.168.0.200"){
     Serial.println("------------IP OK");
   } else {
     Serial.println("------------Restarting, bad IP");
     ESP.restart();
-  }
+  }*/
   
   if (!LOG.isPresent()){
     Serial.println("SD card not available");

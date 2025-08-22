@@ -18,6 +18,8 @@
 class Logger  {
     public:
         Logger();
+        void powerOn(uint8_t pin);
+        void powerOff(uint8_t pin);
         void initSD();
         void addToLogData(std::string key, float value);
         void processLogger();
@@ -27,6 +29,7 @@ class Logger  {
         void clearSD();
         bool saveOnSD(String fileName, String Data);
         bool saveOnSD_old(String fileName, String Data);
+        bool checkSD();
     private: 
         void createFileName();
         bool createNewFile(String fileName, String Data);

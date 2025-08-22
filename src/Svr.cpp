@@ -373,7 +373,7 @@ String processor(const String& var) {
   void startServer()
 {
   server.on("/readFile", HTTP_GET, [](AsyncWebServerRequest* request) {
-    if( xSemaphoreTake( xSemaphore, (150 * portTICK_PERIOD_MS) == pdTRUE)){
+    if( xSemaphoreTake( xSemaphore, (250 * portTICK_PERIOD_MS) == pdTRUE)){
      // Serial.println("xSemaphoreTake by Server");
       //Serial.println(request->client()->remoteIP());
       int paramsNr = request->params(); 
