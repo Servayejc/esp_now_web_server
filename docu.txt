@@ -1,0 +1,66 @@
+initESP_NOW()
+DB.init("/Struct.json", "/peersList.js");
+    fillDevices(structFileName)
+        - fill PeersList structure from Json file 
+            typedef struct PeerEntry {
+	        uint8_t PeerID;             // *
+	        uint8_t Type;               //not used
+            uint8_t MAC[6];             // set to zero at starting   
+            uint8_t Channel;            // always 0 to follow WiFi router    
+            uint8_t Connected;          //not used
+            uint8_t deviceIds[12];      // *
+            uint8_t deviceTypes[12];    // *
+            uint8_t controlIds[12];     // *
+            }
+    
+    DataBase::loadPeers(String peersFilename)  
+        - open the Json file (Create the file if they don't exists)  
+        - addPeerToESPNOW(mac) if MAC is (not 00:00:00:00:00:00)                 // ToDo correct code!!!!! check 00:00...
+          // nothing is added if the peerList was just created    
+
+    
+    DataBase::savePeers(String from)
+        - Loop the PeerList structure and save in /peersList.js                 
+       
+    
+    DataBase::addPeerToList(const uint8_t *mac_addr, int8_t PeerID)
+        - Loop the PeerList structure to find the PeerID
+        - if found 
+                Update MAC
+        - if not found  // in this case, we need add a Peer in Struct.json 
+                Create a new entry in the structure 
+                Update MAC
+                addPeerToESPNOW(MAC)                                 // ToDo generate a warning to the user by mail
+                 
+
+//processing SetPoints from HTML 
+//------------------------------
+
+// in JS user push + or - to adjust setpoint  
+    function OnBtnUp(ev){
+    function OnBtnDown(ev)    
+    // send json message {"peerID": peerID , "DevID":DevID , "DevType":DevType ,  "value" : value}; 
+        function sendAsJson(el, value){
+
+    // the server receive the new setpoint and send the new setpoint to the appropriate device via ESP_NOW 
+    // the messasge is a struct_message 
+       
+        function handleWebSocketMessage(
+            sendSetPoints(int8_t peerId)
+                esp_now_send(mac_addr, (uint8_t *)&setpoints, sizeof(setpoints));
+                    // Peer receive the message and save the value in RTCData (EEPROM)
+                    // Peer replay to the server by sending all values for this device including new setpoint 
+
+ //-------------------------     
+
+ Win+X Device manager  to see ports
+
+pio device monitor -p COM10    // ESP32
+pio device monitor -p COM4   // ESP8266
+
+
+Alien Icon -> Quick Access -> Miscellaneous -> New Terminal
+pio device monitor -p COM4   // ESP8266
+
+
+

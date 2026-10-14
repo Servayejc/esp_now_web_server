@@ -1,0 +1,5 @@
+{
+  "selectedLLM": "AZURE_OPENAI",
+  "endpoint": "https://[CUSTOM ORGANIZATION LINK].cognitiveservices.azure.com",
+  "deploymentName": "gpt-4o-mini"
+}

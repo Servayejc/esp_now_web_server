@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../esp8266_espnow"
+		}
+	],
+	"settings": {
+		"bevel.java": "c:\\Users\\JCS\\.vscode\\extensions\\bevel-software.bevel-1.3.0\\backend\\jdk17.0.16_8\\bin\\java.exe"
+	}
+}

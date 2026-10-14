@@ -1,0 +1,10 @@
+<div class="card thermostat S_2 play" id="S_2_2">
+		<!-- level -->
+		<h4><i class="fas fa-thermometer-half"></i> <span id="$Title"></span></h4>
+		<div class="progress-container">
+			<div class="progress-bar"></div>
+		</div>
+		<div class="progress-value" id="level_value">25%</div>
+		<p class="packet"><span id="$MsgID"></span></p>"
+		<!-- level -->
+	 </div>

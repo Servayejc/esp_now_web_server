@@ -1,0 +1,75 @@
+{
+  "supportedFileExtensions": {
+    "COBOL": [
+      ".cbl",
+      ".cob",
+      ".ccp",
+      ".cobol",
+      ".cpy",
+      ".cpb",
+      ".cblcpy",
+      ".mf"
+    ],
+    "CSharp": [
+      ".cs"
+    ],
+    "Kotlin": [
+      ".kt",
+      ".kts"
+    ],
+    "TypeScript": [
+      ".ts",
+      ".tsx"
+    ],
+    "JavaScript": [
+      ".js",
+      ".jsx"
+    ],
+    "Python": [
+      ".py"
+    ],
+    "Ruby": [
+      ".rb"
+    ],
+    "Java": [
+      ".java"
+    ],
+    "Go": [
+      ".go"
+    ],
+    "Rust": [
+      ".rs"
+    ],
+    "Scala": [
+      ".scala"
+    ],
+    "Swift": [
+      ".swift"
+    ],
+    "C": [
+      ".c",
+      ".h"
+    ],
+    "Cpp": [
+      ".cpp",
+      ".h",
+      ".hpp"
+    ],
+    "Perl": [
+      ".pl",
+      ".pm",
+      ".pod"
+    ],
+    "PHP": [
+      ".php"
+    ],
+    "Pascal": [
+      ".pas",
+      ".dfm",
+      ".inc"
+    ],
+    "Dart": [
+      ".dart"
+    ]
+  }
+}

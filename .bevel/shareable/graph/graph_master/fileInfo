@@ -1,0 +1,165 @@
+{
+  "fileInfos" : [ {
+    "path" : "MonitorColors.py",
+    "modificationInfo" : {
+      "contentHash" : -640254140,
+      "lastModified" : 1771878789538
+    },
+    "linesOfCode" : 5
+  }, {
+    "path" : "data\\config.js",
+    "modificationInfo" : {
+      "contentHash" : -304658230,
+      "lastModified" : 1739199448000
+    },
+    "linesOfCode" : 33
+  }, {
+    "path" : "data\\server.js",
+    "modificationInfo" : {
+      "contentHash" : -2028748446,
+      "lastModified" : 1762975822000
+    },
+    "linesOfCode" : 615
+  }, {
+    "path" : "include\\version.h",
+    "modificationInfo" : {
+      "contentHash" : 1630576123,
+      "lastModified" : 1741959439987
+    },
+    "linesOfCode" : 10
+  }, {
+    "path" : "src\\Config.h",
+    "modificationInfo" : {
+      "contentHash" : 683800405,
+      "lastModified" : 1774041313504
+    },
+    "linesOfCode" : 48
+  }, {
+    "path" : "src\\DataBase.cpp",
+    "modificationInfo" : {
+      "contentHash" : 816989698,
+      "lastModified" : 1773587230945
+    },
+    "linesOfCode" : 452
+  }, {
+    "path" : "src\\DataBase.h",
+    "modificationInfo" : {
+      "contentHash" : -1416856415,
+      "lastModified" : 1773096376836
+    },
+    "linesOfCode" : 44
+  }, {
+    "path" : "src\\JSValidator.cpp",
+    "modificationInfo" : {
+      "contentHash" : 1206517933,
+      "lastModified" : 1756296680000
+    },
+    "linesOfCode" : 180
+  }, {
+    "path" : "src\\JSValidator.h",
+    "modificationInfo" : {
+      "contentHash" : 109116780,
+      "lastModified" : 1756137310000
+    },
+    "linesOfCode" : 7
+  }, {
+    "path" : "src\\Logger.cpp",
+    "modificationInfo" : {
+      "contentHash" : -497427070,
+      "lastModified" : 1773856023177
+    },
+    "linesOfCode" : 365
+  }, {
+    "path" : "src\\Logger.h",
+    "modificationInfo" : {
+      "contentHash" : 1312707839,
+      "lastModified" : 1768480964000
+    },
+    "linesOfCode" : 48
+  }, {
+    "path" : "src\\Svr.cpp",
+    "modificationInfo" : {
+      "contentHash" : -441034316,
+      "lastModified" : 1774041624917
+    },
+    "linesOfCode" : 514
+  }, {
+    "path" : "src\\Svr.h",
+    "modificationInfo" : {
+      "contentHash" : -647434103,
+      "lastModified" : 1763774870000
+    },
+    "linesOfCode" : 41
+  }, {
+    "path" : "src\\Utils.cpp",
+    "modificationInfo" : {
+      "contentHash" : 1176229103,
+      "lastModified" : 1773587230945
+    },
+    "linesOfCode" : 229
+  }, {
+    "path" : "src\\Utils.h",
+    "modificationInfo" : {
+      "contentHash" : 177575287,
+      "lastModified" : 1767012022000
+    },
+    "linesOfCode" : 26
+  }, {
+    "path" : "src\\flashLed.cpp",
+    "modificationInfo" : {
+      "contentHash" : -1986193197,
+      "lastModified" : 1773834007545
+    },
+    "linesOfCode" : 83
+  }, {
+    "path" : "src\\flashLed.h",
+    "modificationInfo" : {
+      "contentHash" : 31658537,
+      "lastModified" : 1773834007545
+    },
+    "linesOfCode" : 9
+  }, {
+    "path" : "src\\global.h",
+    "modificationInfo" : {
+      "contentHash" : 1709406958,
+      "lastModified" : 1774040479738
+    },
+    "linesOfCode" : 121
+  }, {
+    "path" : "src\\main.cpp",
+    "modificationInfo" : {
+      "contentHash" : -1902248483,
+      "lastModified" : 1773590392662
+    },
+    "linesOfCode" : 79
+  }, {
+    "path" : "src\\print.cpp",
+    "modificationInfo" : {
+      "contentHash" : -1262848283,
+      "lastModified" : 1773081526754
+    },
+    "linesOfCode" : 112
+  }, {
+    "path" : "src\\print.h",
+    "modificationInfo" : {
+      "contentHash" : -1586905340,
+      "lastModified" : 1767377324000
+    },
+    "linesOfCode" : 22
+  }, {
+    "path" : "src\\setup.cpp",
+    "modificationInfo" : {
+      "contentHash" : -1972898528,
+      "lastModified" : 1773855216111
+    },
+    "linesOfCode" : 272
+  }, {
+    "path" : "src\\setup.h",
+    "modificationInfo" : {
+      "contentHash" : 1206516143,
+      "lastModified" : 1748457424000
+    },
+    "linesOfCode" : 9
+  } ],
+  "appVersion" : "1.3.0"
+}
