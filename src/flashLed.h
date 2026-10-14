@@ -6,3 +6,4 @@
 
 void showError(uint8_t Code);
 void processBlink();
+void showDebug(bool state);

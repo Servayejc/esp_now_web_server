@@ -5,39 +5,43 @@
   <title>ESP-NOW DASHBOARD</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta charset="UTF-8">
+  <meta charset="UTF-8">
+  <meta http-equiv="Cache-Control" content="no-store">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <meta name = "apple-mobile-web-app-title" content="Vesta">
   <meta http-equiv="Access-Control-Allow-Origin" content="*"/>
-
+  
   <!-- <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous"> -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"  crossorigin="anonymous">
   <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="server.css">
+  <link rel="stylesheet" href="server.css?ver=26-06-23">
   
   <link href="https://cdnjs.cloudflare.com/ajax/libs/c3/0.4.20/c3.min.css" rel="stylesheet" />
   <script src= "https://cdnjs.cloudflare.com/ajax/libs/d3/5.8.2/d3.min.js"></script>
   <script src= "https://cdnjs.cloudflare.com/ajax/libs/c3/0.7.20/c3.min.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
   <script type="text/javascript" src="https://unpkg.com/default-passive-events"></script>    
-  <script defer src="server.js?ver=3"></script>
+  <script defer src="server.js?ver=26-06-23"
+  ></script>
 </head>
 
 <body>
   <div class="topnav">
     <h3 id="test">ESP-NOW DASHBOARD</h3>
-  </div>
-  <div class="header">
-    <a href="/config">Configuration</a> 
-    <a href="/vest">Vest</a> 
-    <div id = "wsStatus"></div>
+        <div id = "wsStatus"></div>
     <button id = "PairRQ"  onclick="OnPairRQ()">Pair</button>
     <button id = "TEST"  onclick="OnTest()">Test</button>
-    <input type="date"  id = "logDate">
-    <button onclick="getGraphData()">Graph</button>
-  </div>  
+  </div>
+  	<div class="menu">
+		<div class="date-picker">
+			<input type="text" id="dateInput"  placeholder="Select a date" readonly >
+			<div id="calendar" class="calendar hidden"></div>
+		</div>	
+	</div>
   <div class="content">
-    <div class="cards" id = "cards">
-      <div class="chart" id="Graph"></div>
-    </div>
+    <div class="chart" id="Graph"></div>
+    <div class="cards" id = "cards"></div>
   </div>
 </body>
 

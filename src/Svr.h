@@ -9,6 +9,8 @@
 
 void startServer();
 void initESP_NOW();
+void sendResetToPeers();
+
 void OnDataRecv(const uint8_t *mac_addr, const uint8_t *incomingData, int len);
 /*
     - read first byte of the message (this is the messageType) 

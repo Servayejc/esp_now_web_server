@@ -1,11 +1,13 @@
-Hitron modem settings
+Modem settings
 
 - set port forwarding
 	VESTA	80~80	80~80	TCP	192.168.0.100	Any
 - set DHCP
 	VESTA   192.168.0.100   Server MAC Address	
 
-
+To protect your credentials, move Credentials.h in a secure directory and edit platformio.ini 
+build_flags = 
+	-I ../Lib/	   
 
 
 Description du projet

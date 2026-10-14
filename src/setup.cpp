@@ -23,19 +23,23 @@
 #include "Utils.h"
 #include <DataBase.h>
 #include "version.h"
+#include "JSValidator.h"
+#include <Preferences.h>
 
-#define BitVal(data,y) ( (data>>y) & 1) 
+  #define BitVal(data,y) ( (data>>y) & 1) 
 
 int pingID = 0;
 int send = 0;
 int led = 0;
 
-
-#define LED 2
+#define LED 15
 
 unsigned long start;
 bool serverReset = false;
 SemaphoreHandle_t xSemaphore;
+
+
+
 Logger LOG;
 DataBase DB;
 
@@ -73,7 +77,7 @@ struct_message outgoingSetpoints;
 
 
 void setTimezone(String timezone){
-    Serial.printf("Setting Timezone to %s\n",timezone.c_str());
+    safeSerialPrintf("Setting Timezone to %s\n",timezone.c_str());
     setenv("TZ",timezone.c_str(),1);  //  Now adjust the TZ.  Clock settings are adjusted to show the new local time
     tzset();
 }
@@ -92,45 +96,57 @@ void promiscuous_rx_cb(void *buf, wifi_promiscuous_pkt_type_t type) {
           rssi = ppkt->rx_ctrl.rssi;
           #ifdef DEBUG_RSSI
             printMAC(hdr->addr2);     //sender MAC
-            Serial.print(" --> ");
+            safeSerialPrintf(" --> ");
             printMAC(hdr->addr1);     //receiver MAC
-            Serial.print(" : ");
-            Serial.println(rssi);
+            safeSerialPrintf(" : ");
+            safeSerialPrintf("%d\n", rssi);
           #endif
         }
     }
 }
 
+void getWiFiChannel(){
+    // Reset all peers in case of channel change
+    WiFi.mode(WIFI_STA);
+    WiFi.begin(ssid, password);
+    while (WiFi.status() != WL_CONNECTED)
+    {
+      delay(1000);
+      safeSerialPrintf("Checking WiFi channel change...\n");
+    }
+    delay(1000);
+    safeSerialPrintf("Current WiFi channel: %d\n", WiFi.channel());
+    if (checkWiFiChannel()){
+      sendResetToPeers();
+    }
+    WiFi.disconnect();
+}
+
 void setWiFi(){
+    getWiFiChannel();
+    //connect to WiFi for Server and Esp_Now for transmit and recieve
     WiFi.mode(WIFI_AP_STA);
     esp_wifi_set_promiscuous(true); 
     esp_wifi_set_promiscuous_rx_cb(&promiscuous_rx_cb);
     // Set the device as a Station and Soft Access Point simultaneously
    
     IPAddress local_IP(192, 168, 0, 200);
-    /*IPAddress gateway(192, 168, 0, 1);
-    IPAddress subnet(255, 255, 0, 0);
-    IPAddress primaryDNS(8, 8, 8, 8);   //optional
-    IPAddress secondaryDNS(8, 8, 4, 4); //optional*/
-
 
     WiFi.begin(ssid, password);
     while (WiFi.status() != WL_CONNECTED)
     {
       delay(1000);
-      Serial.println("Setting as a Wi-Fi Station...");
+      safeSerialPrintf("Setting as a Wi-Fi Station...\n");
     }
     delay(1000);
+
+    
     #ifdef DEBUG_WIFI
-        Serial.print("Server SOFT AP MAC Address:  ");
-        Serial.println(WiFi.softAPmacAddress());
-        Serial.print("Server MAC Address:  ");
-        Serial.println(WiFi.macAddress());
-        Serial.print("Station IP Address: ");
-        Serial.println(WiFi.localIP());
-        Serial.print("Wi-Fi Channel: ");
-        Serial.println(WiFi.channel());
-        WiFi.printDiag(Serial);
+      safeSerialPrintf("Server SOFT AP MAC Address: %s\n", WiFi.softAPmacAddress().c_str());
+      safeSerialPrintf("Server MAC Address: %s\n", WiFi.macAddress().c_str());
+      safeSerialPrintf("Station IP Address: %s\n", WiFi.localIP().toString().c_str());
+      safeSerialPrintf("Wi-Fi Channel: %d\n", WiFi.channel());
+      WiFi.printDiag(Serial);
     #endif
     // hide AP on WiFi network, it's not a real AP
     chan = WiFi.channel();
@@ -139,41 +155,37 @@ void setWiFi(){
 
 void mountLittleFS(){
     if(!LittleFS.begin(true)){
-        showError(12);
-        Serial.println("An Error has occurred while mounting LittleFS");
+        //showError(12);
+        safeSerialPrintf("An Error has occurred while mounting LittleFS\n");
         return;
     }
     #ifdef DEBUG_LITTLEFS
-        Serial.print("LittleFS Mounted Total: ");
-        Serial.print(LittleFS.totalBytes()/1024);
-        Serial.print(" Used: ");
-        Serial.print(LittleFS.usedBytes()/1024);
-        Serial.println(" bytes");  
+        safeSerialPrintf("LittleFS Mounted Total: %d\n", LittleFS.totalBytes()/1024);
+        safeSerialPrintf(" Used: %d\n", LittleFS.usedBytes()/1024);
     #endif
 }
 
 void startMDNS(){
-    Serial.println("Starting mDNS...");
-    while (!MDNS.begin(hostName))
-    {
-        Serial.print(".");
-        delay(1000);
+  safeSerialPrintf("Starting mDNS...\n");  
+  while (!MDNS.begin(hostName))
+  {
+      safeSerialPrintf(".");
+      delay(1000);
     }
     MDNS.addService("http", "tcp", serverPort);
-    Serial.println("MDNS started");
+    safeSerialPrintf("MDNS started\n");
 }
 
 void setTime(){
-    Serial.println("Setting time...");
     struct tm timeinfo;
-    Serial.println("Setting up time");
+    safeSerialPrintf("Setting up time\n");
     configTime(0,0, "pool.ntp.org");    // First connect to NTP server, with 0 TZ offset
     
     if(!getLocalTime(&timeinfo)){
-      Serial.println("  Failed to obtain time");
+      safeSerialPrintf("  Failed to obtain time\n");
     return;
     }
-    Serial.println("  Got the time from NTP");
+    safeSerialPrintf("  Got the time from NTP\n");
     // Now we can set the real timezone
     setTimezone(timeZoneString);
 
@@ -184,36 +196,43 @@ void setTime(){
 }
 
 
+
 void doSetup()
 {
   // Initialize Serial Monitor
   Serial.begin(74880);
-  delay(100);
-  start = millis();
-  Serial.println(start);
-  Serial.println();
-  Serial.print("Firmware Version: ");
-  Serial.println(VERSION_SHORT);
- 
+  delay(1000);
+  showDebug(false);
+  
   
 
   xSemaphore = xSemaphoreCreateMutex();
+  serialMutex = xSemaphoreCreateMutex();
+  
+  start = millis();
+  safeSerialPrintf("Starting : %d \n", start);
+  safeSerialPrintf("Firmware Version: %s \n", VERSION_SHORT);
   
   pinMode(LED,OUTPUT);
   digitalWrite(LED,HIGH);
-  delay(1000);
+  delay(100);
   digitalWrite(LED,LOW);
- 
+
+  
   setWiFi();
    
   setTime();  
 
   mountLittleFS();
 
+  
+
   LOG.initSD(); 
   
-  
+  //validateJSON();
+
   startMDNS();
+  
  
   #ifdef DEBUG_DIRECTORY
     showDirectory();
@@ -223,32 +242,31 @@ void doSetup()
 
   // initialize ESPNOW 
   initESP_NOW();
-  
-  Serial.println("========================");
- // DB.fillDevices("/Struct.json");
+  safeSerialPrintf("========================\n");
+  // DB.fillDevices("/Struct.json");
  // DB.loadPeers();
-  DB.init("/Struct.json", "/peersList.js");
-
-  Serial.println("========================");
-
-  Serial.println("Starting server");
+  DB.init("/Struct.json", "/peersList.js");          // add code to delete peersList.js if 
+  safeSerialPrintf("========================\n");
+  safeSerialPrintf("Starting server\n");
   startServer(); 
-  Serial.println("Server started");   
+  safeSerialPrintf("Server started %\n");
 
   LOG.printTime();
-  //DB:addPeerToESPNOW(broadcastAddressX);
+  
+
   //showDirectory();
   
   /*if (WiFi.localIP() == "192.168.0.200"){
-    Serial.println("------------IP OK");
+    safeSerialPrintf("------------IP OK");
   } else {
-    Serial.println("------------Restarting, bad IP");
+    safeSerialPrintf("------------Restarting, bad IP");
     ESP.restart();
   }*/
   
+ // DB.printPeersFromFile();
   if (!LOG.isPresent()){
-    Serial.println("SD card not available");
-    ESP.restart();
+    safeSerialPrintf("SD card not available/n");
+  //  ESP.restart();
   }
   
 }

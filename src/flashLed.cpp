@@ -1,16 +1,18 @@
 #include <Arduino.h>
 #include "TickTwo.h"
+#include "Utils.h"
 
 bool ledState;
 byte ledPin = 2;
+byte debugPin = 15;
 uint8_t code2 = 0;
 uint8_t longPulses = 0;
 uint8_t shortPulses = 0;
 
 #define SHORT   600
-#define LONG    2000
+#define LONG    1000
 #define SPACE   500
-#define END     5000
+#define END     1000
 
 /* error codes
 11 Wifi can not connect
@@ -20,10 +22,15 @@ uint8_t shortPulses = 0;
 void blink();
 TickTwo timer(blink, 1);
 
+void showDebug(bool state){
+    pinMode(debugPin, OUTPUT);
+    digitalWrite(debugPin, state);
+}
+
 /* the error code must contains 2 digits between 1 and 9 */
 void showError(uint8_t code){
     if (code < 10 || code > 99) {
-        Serial.println("Error: Code must be between 1 and 9");
+        safeSerialPrintf("Error: Code must be between 1 and 9\n");
         return; // Exit early if the code is invalid
     }    
     code2 = code;
@@ -33,7 +40,7 @@ void showError(uint8_t code){
     ledState = 1;
     digitalWrite(ledPin, ledState);  // led ON
     timer.start();
-    /*Serial.println("Started");*/
+    //safeSerialPrintf("Started\n");
 }
 
 void processBlink(){
@@ -67,9 +74,9 @@ void processBlink(){
 }
 
 void blink() {
-  /*Serial.print(timer.counter());
-  Serial.print("  ");
-  Serial.println(timer.interval()/1000);*/  
+  /*safeSerialPrint(timer.counter());
+  safeSerialPrint("  ");
+  safeSerialPrint(timer.interval()/1000);*/  
   digitalWrite(ledPin, ledState);
   ledState = !ledState;
 }

@@ -19,20 +19,21 @@ AsyncWebSocket ws("/ws");
 
 PeerList Peers = {};
 
-struct_message setpoints = {};
+struct_message setpoint = {};
 struct_pairing pairingData = {};
 
 std::map<std::string, std::string> SuffixToLogType_Map;
 std::map<std::string, std::string>::iterator SuffixToLogType_Map_it;
 std::map<std::string, struct_LogTemp>::iterator it;
 
-#define LED 2
 
 
 // ESP_NOW message received from a peer
-void ProcessDataReceived(const uint8_t *mac_addr, const uint8_t *incomingData, int len)
+void ProcessDataReceived(const esp_now_recv_info* info, const uint8_t *incomingData, int len)
 {
-  digitalWrite(LED,!digitalRead(LED));
+
+  uint8_t *mac_addr = info->src_addr;
+  //digitalWrite(LED,!digitalRead(LED));
   
   char keyStr[30]; 
  
@@ -42,8 +43,8 @@ void ProcessDataReceived(const uint8_t *mac_addr, const uint8_t *incomingData, i
   int PeerID = DB.macToPeerID(mac_addr);
 
 #ifdef DEBUG_DATA_RECEIVED
-   printlnMAC(mac_addr);
-   Serial.println(PeerID);
+   printMAC(mac_addr);
+   safeSerialPrintf(" - ",PeerID);
 #endif
   
   if (PeerID > 0)
@@ -64,26 +65,23 @@ void ProcessDataReceived(const uint8_t *mac_addr, const uint8_t *incomingData, i
     uint8_t deviceType = incomingReadings.deviceType;
 
 #ifdef DEBUG_DATA_RECEIVED
-    Serial.print("DeviceID : ");
-    Serial.print(incomingReadings.deviceId);
+    safeSerialPrintf("DeviceID : %d\n",incomingReadings.deviceId);
 #endif
     JsonArray D = root.createNestedArray("D");
     JsonObject Data = D.createNestedObject();
     char buffer[10];
-
 #ifdef DEBUG_DATA_RECEIVED
-    Serial.print("Sensor Address : ");
+    safeSerialPrintf("Sensor Address : ");
     for (byte i = 0; i < 8; i++)
     {
-      Serial.print(incomingReadings.deviceAddress[i], HEX);
-      Serial.print(" ");
+      safeSerialPrintf("%d ",incomingReadings.deviceAddress[i], HEX);
     }
-    Serial.println();
+    safeSerialPrintf("\n");
 #endif    
     Data["rssi"] = rssi;
     switch (deviceType)
     {
-    case 0: // Thermostat
+    case THERMOSTAT: // Thermostat
       snprintf(buffer, 10, "%2.2f", incomingReadings.F1);
       Data["F1"] = buffer;
       Data["F2"] = incomingReadings.F2;
@@ -91,52 +89,49 @@ void ProcessDataReceived(const uint8_t *mac_addr, const uint8_t *incomingData, i
       Data["MsgID"] = deviceStr;
       break;
 
-    case 1: // Thermometer
+    case THERMOMETER: // Thermometer
       snprintf(buffer, 10, "%2.2f", incomingReadings.F1);
       Data["F1"] = buffer;
       Data["MsgID"] = deviceStr;
       break;
 
-    case 2: // ON/OFF
+    case RELAY: // RELAY
       Data["Cmd"] = incomingReadings.U2;
       Data["U1"] = incomingReadings.U1;
       break;
+
+    case LEVEL: // level
+      snprintf(buffer, 10, "%f", incomingReadings.F1);
+      Data["F1"] = buffer;
+      sprintf (buffer, "%2.1f", (incomingReadings.F1*100)/8);
+      Data["F2"] = buffer;
+      Data["MsgID"] = deviceStr;
+      break;  
     }
     
     //{"PeerID":3,"DeviceID":2,"D":[{"F1":"22.19","MsgID":"28:27:be:54:03:00:00:f2"}]}
     char keyStr[30];
-    
     JsonObject Z = root["D"][0];   //{"F1":"22.19") 
     for (JsonPair kv : Z) {
       snprintf(keyStr, sizeof(keyStr), "%s_%d_%d",kv.key().c_str(),PeerID,incomingReadings.deviceId); // "F1_3_2"
-      
-      
       auto a = SuffixToLogType_Map.find((std::string)keyStr);
-
       if(a!= SuffixToLogType_Map.end()){
         if  (a->second == "L"){
           #ifdef DEBUG_DATA_RECEIVED  
-            Serial.print("----logging ");
-            Serial.print(a->first.c_str());
-            Serial.print(" to ");
-            Serial.print(a->second.c_str());
-            Serial.print("  Value = ");
-            Serial.println(kv.value().as<const char*>());
-          #endif 
+            safeSerialPrintf("----logging %s to %s value = %s\n", a->first.c_str(), a->second.c_str(), kv.value().as<const char*>());
+           #endif 
           LOG.addToLogData((std::string) a->first.c_str(), kv.value().as<float>());
-         
         }
       }
     }
     serializeJson(root, payload);
     events.send(payload.c_str(), "new_readings", millis());
 #ifdef DEBUG_DATA_RECEIVED
-    Serial.print("event send :");
+    safeSerialPrintf("event send : ");
     serializeJson(root, Serial);
-    Serial.println();
+    safeSerialPrintf("\n");
 #endif
   }
-  //stopTime();
 }
 
 //typedef struct esp_now_recv_info {
@@ -147,33 +142,42 @@ void ProcessDataReceived(const uint8_t *mac_addr, const uint8_t *incomingData, i
 
 
 
-void OnDataRecv(const esp_now_recv_info* mac, const uint8_t *incomingData, int len) 
-//void OnDataRecv(const uint8_t *mac_addr, const uint8_t *incomingData, int len)
+void OnDataRecv(const esp_now_recv_info* info, const uint8_t *incomingData, int len) 
 {
   //startTime();
   uint8_t type = incomingData[0];
   switch (type)
   {
   case DATA:
-    ProcessDataReceived(mac->src_addr, incomingData, len);
+    if (len != sizeof(struct_message)) {
+      safeSerialPrintf("***** Invalid DATA length *****\n");
+      exit(0);
+    }
+    ProcessDataReceived(info, incomingData, len);
     break;
 
   case PING:
+    if (len != sizeof(pingData)) return;
     memcpy(&pingData, incomingData, sizeof(pingData));
-#ifdef DEBUG_PING
-    Serial.print("Ping response from ");
-    printMAC(mac->src_addr);
-    Serial.print(" in ");
-    Serial.print(millis() - pingTime);
-    Serial.println(" ms ");
-#endif
+    pingData.msgType = PING;
+    pingData.PeerID = SERVER_ID;
+    esp_now_send(info->src_addr, (uint8_t *)&pingData, sizeof(pingData));
+    /*#ifdef DEBUG_PING
+        safeSerialPrintf("Ping response from ");
+        printMAC(info->src_addr);
+        safeSerialPrintf(" in %d ms \n", millis() - pingTime);
+    #endif*/
     break;
 
   case PAIRING: // the message is a pairing request
-    memcpy(&pairingData, incomingData, sizeof(pairingData));
+  //if (len != sizeof(pairingData)) return; 
+  //Serial.println(sizeof(pairingData));
+  //Serial.println(len);
+  memcpy(&pairingData, incomingData, sizeof(pairingData));
     #ifdef DEBUG_PAIRING
-      Serial.print("Pairing request from: ");
-      printlnMAC(mac->src_addr);
+      safeSerialPrintf("Pairing request from: ");
+      printMAC(info->src_addr);
+      safeSerialPrintf("\n");
     #endif  
     StaticJsonDocument<1000> root;
     root["msgType"] = pairingData.msgType;
@@ -182,17 +186,14 @@ void OnDataRecv(const esp_now_recv_info* mac, const uint8_t *incomingData, int l
     root["connected"] = 1;                 //
     root["channel"] = pairingData.channel;
     #ifdef DEBUG_PAIRING
-      serializeJson(root, Serial);
-      Serial.println();
+      //serializeJson(root, Serial);
+      //safeSerialPrintf("\n");
     #endif
     if (pairingData.network == SERVER_ID) // reply only to network peers
     {
       if (pairingData.msgType == PAIRING)
       {
-        //Serial.print(pairingData.id);
-        //printlnMAC(mac_addr);
-        DB.addPeerToList(mac->src_addr, pairingData.id);
-        // getDevices(pairingData.id);
+        DB.addPeerToList(info->src_addr, pairingData.id);
         pairingData.id = SERVER_ID;
         // Server is in AP_STA mode: peers need to send data to server soft AP MAC address
         WiFi.softAPmacAddress(pairingData.macAddr);
@@ -200,43 +201,81 @@ void OnDataRecv(const esp_now_recv_info* mac, const uint8_t *incomingData, int l
         #ifdef DEBUG_PAIRING
           printPairingData();
         #endif  
-        esp_now_send(mac->src_addr, (uint8_t *)&pairingData, sizeof(pairingData));
+        esp_now_send(info->src_addr, (uint8_t *)&pairingData, sizeof(pairingData));
       }
     }
     break;
   }
 }
 
+
 void initESP_NOW()
 {
   // Init ESP-NOW
   if (esp_now_init() != ESP_OK)
   {
-    Serial.println("Error initializing ESP-NOW");
+    safeSerialPrintf("Error initializing ESP-NOW \n");
     return;
   }
   esp_now_register_send_cb(OnDataSent);
   esp_now_register_recv_cb(OnDataRecv);
-  Serial.println("ESP-NOW initialyzed");
+  safeSerialPrintf("ESP-NOW initialyzed \n");
 }
 
-void sendSetPoints(int8_t peerId)
+void sendResetToPeers(){ 
+    for (uint8_t i = 1; i < 12; i++) {
+      uint8_t broadcastAddress[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+      esp_now_peer_info_t peerInfo = {};
+      memcpy(peerInfo.peer_addr, broadcastAddress, 6);
+      peerInfo.channel = i;
+      peerInfo.encrypt = false;
+
+      if (esp_now_add_peer(&peerInfo) == ESP_OK) {
+          safeSerialPrintf("Broadcast peer added");
+          esp_now_send(broadcastAddress, (uint8_t *) &pairReset, sizeof(pairReset));
+          safeSerialPrintf("Reset message sent");
+      }
+    } 
+  } 
+
+/*void sendSetPoints(int8_t peerId)
 {
   uint8_t *mac_addr = DB.PeerIDtoMAC(peerId);
   #ifdef DEBUG_SETPOINTS
-    Serial.print("SendSetPoints to peer ");
-    Serial.print(peerId);
-    Serial.print(" mac = ");
+    safeSerialPrintf("SendSetPoints to peer %d mac= ",peerId);
     printlnMAC(mac_addr);
   #endif
   esp_err_t result = esp_now_send(mac_addr, (uint8_t *)&setpoints, sizeof(setpoints));
+}*/
+bool sendSetPoint(int8_t peerId, int8_t deviceId)
+{
+  uint8_t *mac_addr = DB.PeerIDtoMAC(peerId);
+  #ifdef DEBUG_SETPOINTS
+    printMAC(mac_addr);
+  #endif
+  esp_err_t result = esp_now_send(mac_addr, (uint8_t *)&setpoint, sizeof(setpoint));
+  if (result == ESP_OK) {
+    safeSerialPrintf("SetPoint sent to peer %d deviceId %d value %d mac ",peerId, deviceId, setpoint.U1);
+    printMAC(mac_addr);
+    safeSerialPrintf("\n");
+    DB.addSetPoint(peerId, deviceId, setpoint.U1);
+    return true;
+  } else { 
+    return false;
+  }
 }
 
 void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status)
 {
-#ifdef DEBUG_ON_SEND
-  Serial.print("Last Packet Send Status: ");
-  Serial.print(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success to " : "Delivery Fail to ");
+  if (status != ESP_NOW_SEND_SUCCESS) {
+    safeSerialPrintf("Delivery Fail to "); 
+    printMAC(mac_addr);
+    safeSerialPrintf("\n");
+  }  
+
+  #ifdef DEBUG_ON_SEND
+  safeSerialPrintf("Last Packet Send Status: ");
+  safeSerialPrintf(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success to " : "Delivery Fail to ");
   printlnMAC(mac_addr);
 #endif
 }
@@ -265,19 +304,31 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len, int clientID)
       return;
     }     
 
-    setpoints.msgType = SETPOINTS;
-    setpoints.deviceId = root["DevID"];
-    setpoints.deviceType = DB.getDeviceType(root["peerID"], root["DevID"]);
-    setpoints.U1 = root["value"];
+    setpoint.msgType = SETPOINTS;
+    setpoint.deviceId = root["DevID"];
+    setpoint.deviceType = DB.getDeviceType(root["peerID"], root["DevID"]);
+    setpoint.U1 = root["value"];
 
     #ifdef DEBUG_SETPOINTS
-      Serial.println(setpoints.deviceId);
-      Serial.println(setpoints.deviceType);
-      Serial.println(setpoints.F1);
-      Serial.println(setpoints.U1);
+      safeSerialPrintf("%d",setpoints.deviceId);
+      safeSerialPrintf("%d",setpoints.deviceType);
+      safeSerialPrintf("%d",setpoints.F1);
+      safeSerialPrintf("%d",setpoints.U1);
     #endif
 
-    sendSetPoints(root["peerID"]);
+    if (!sendSetPoint(root["peerID"], root["DevID"])) {
+      safeSerialPrintf("Failed to send set point to peer %d\n", root["peerID"]);
+    } else {
+      uint8_t *mac_addr = DB.PeerIDtoMAC(root["peerID"]);
+      #ifdef DEBUG_SETPOINTS
+        safeSerialPrintf("SendSetPoints to peer %d mac= ",peerId);
+        printlnMAC(mac_addr);
+      #endif
+      esp_err_t result = esp_now_send(mac_addr, (uint8_t *)&setpoint, sizeof(setpoint));
+      if (result == ESP_OK) {
+        DB.addSetPoint(root["peerID"], root["peerID"], root["value"]);
+      }
+    }  
   }
 }
 
@@ -285,25 +336,25 @@ void onSocketEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEven
                    void *arg, uint8_t *ws_data, size_t len)
 {
   #ifdef DEBUG_WS_EVENTS
-    Serial.println("event");
+    safeSerialPrintf("event");
   #endif  
   switch (type)
   {
   case WS_EVT_CONNECT:
     #ifdef DEBUG_WS_EVENTS
-      Serial.printf("WebSocket client #%u connected from %s\n", client->id(), client->remoteIP().toString().c_str());
+      safeSerialPrintf("WebSocket client #%u connected from %s\n", client->id(), client->remoteIP().toString().c_str());
     #endif 
     break;
 
   case WS_EVT_DISCONNECT:
     #ifdef DEBUG_WS_EVENTS
-      Serial.printf("WebSocket client #%u disconnected\n", client->id());
+      safeSerialPrintf("WebSocket client #%u disconnected\n", client->id());
     #endif
     break;
 
   case WS_EVT_DATA:
     #ifdef DEBUG_WS_EVENTS
-      Serial.printf("[WSc] get text: %s\n", ws_data);
+      safeSerialPrintf("[WSc] get text: %s\n", ws_data);
     #endif  
     handleWebSocketMessage(arg, ws_data, len, client->id());
     break;
@@ -340,7 +391,6 @@ String processor(const String& var) {
   }
     
   if (var == "Config"){
-    Serial.println("A");
     File peersFile = LittleFS.open("/peersList.js", "r");
     StaticJsonDocument<2000> root;
     DeserializationError error = deserializeJson(root, peersFile); 
@@ -351,11 +401,9 @@ String processor(const String& var) {
       switch (ch){
       case 10:
         html += "<br>";
-        //Serial.println("LF");
         break;
       
       case 32: 
-        //Serial.println("SP");
         html += "&nbsp;&nbsp;&nbsp;&nbsp;";
         break;
 
@@ -374,18 +422,14 @@ String processor(const String& var) {
 {
   server.on("/readFile", HTTP_GET, [](AsyncWebServerRequest* request) {
     if( xSemaphoreTake( xSemaphore, (250 * portTICK_PERIOD_MS) == pdTRUE)){
-     // Serial.println("xSemaphoreTake by Server");
-      //Serial.println(request->client()->remoteIP());
+      safeSerialPrintf("xSemaphore Take by Server\n");
       int paramsNr = request->params(); 
-      //Serial.println(paramsNr);
-      //AsyncWebParameter * p = request->getParam[0]; 
-
       if (request->hasParam("FN")){ 
         
         request->getParam("FN")->value();
-        Serial.println(request->getParam("FN")->value());
+        safeSerialPrintf("%d",request->getParam("FN")->value());
       }
-      Serial.println(request->getParam("FN")->value());
+      safeSerialPrintf("%d",request->getParam("FN")->value());
       
       #ifdef SERVER_TEST
         File f = LittleFS.open(request->getParam("FN")->value(),"r", false);
@@ -394,11 +438,11 @@ String processor(const String& var) {
         File f = SD.open(request->getParam("FN")->value(),"r",false);
       #endif  
       if (!f) {
-        Serial.println ("Log file not found");
+        safeSerialPrintf("Log file not found");
         request->send(404); //file not found
         return;
       } else {
-        Serial.println("Log file opened");
+        safeSerialPrintf("Log file opened\n");
           AsyncWebServerResponse* response = request->
           beginChunkedResponse("application/json", [f](uint8_t* buffer, size_t maxLen, size_t index)-> size_t{
           return load_data(f, buffer, 1024, index);
@@ -406,25 +450,22 @@ String processor(const String& var) {
         request->send(response);
       }
     } else {
-      Serial.println("Log file Locked");
+      safeSerialPrintf("Log file Locked");
     }
     xSemaphoreGive (xSemaphore);
-   // Serial.println("xSemaphoreGive by Server");
+    safeSerialPrintf("xSemaphore Give by Server\n");  
 });
 
 server.on("/updateFile", HTTP_GET, [](AsyncWebServerRequest* request) {
-  //Serial.println(request->client()->remoteIP());
   int paramsNr = request->params(); 
-  //Serial.println(paramsNr);
-  //AsyncWebParameter * p = request->getParam[0]; 
   if (paramsNr == 2){
     if (request->hasParam("FN")){ 
       request->getParam("FN")->value();
-      Serial.println(request->getParam("FN")->value());
+      safeSerialPrintf(request->getParam("FN")->value().c_str());
     }
     if (request->hasParam("Data")){ 
       request->getParam("Data")->value();
-      Serial.println(request->getParam("Data")->value());
+      safeSerialPrintf(request->getParam("Data")->value().c_str());
     }
     LOG.saveOnSD(request->getParam("FN")->value(), request->getParam("Data")->value());  
     request->send(200);
@@ -461,7 +502,7 @@ server.on("/updateFile", HTTP_GET, [](AsyncWebServerRequest* request) {
   events.onConnect([](AsyncEventSourceClient *client)
                    {
   if(client->lastId()){
-     Serial.printf("Client reconnected! Last message ID that it got is: %u\n", client->lastId());
+     safeSerialPrintf("Client reconnected! Last message ID that it got is: %u\n", client->lastId());
   }
   
   // send event with message "hello!"

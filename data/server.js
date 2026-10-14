@@ -73,13 +73,14 @@ function setCalender(){
 }
 
 
-$.get
+
 
 $(document).ready(function(){
+	
 	setStatus("Loading Structure");	
 	setInterval(check, 5000);
-	setCalender();
-	//console.log("create page");
+	//setCalender();
+	console.log("create page");
 	$.getJSON("Struct.json", function(struct){
 		var Peers  = struct.Peers;
 		var DataTypes  = struct.DataTypes;
@@ -105,6 +106,7 @@ $(document).ready(function(){
 				
 				var parent = document.getElementById("cards");
 				t = document.createElement("div");
+				
 				t.setAttribute("class","card thermostat");
 				t.classList.add("S_"+Peers[p]["PeerID"]);
 				t.setAttribute("id","S_"+Peers[p]["PeerID"]+"_"+Devices[d]["ID"]);
@@ -378,7 +380,20 @@ if (!!window.EventSource) {
 				case "H4" :
 					el.innerHTML = Values[key];
 					break;
-				default : el.innerHTML = Values[key];	
+				/*case "PROGRESS" :
+					//el.value = Values[key];	
+					num = Math.trunc(Values[key] + "%"); 
+					console.log(num);
+					el.style.width = num+" ,important";
+					el.innerHTML = num;
+
+					break;*/
+				default : 
+					el.innerHTML = Values[key];
+					if (el.className == "progress-bar") {
+						el.style.width = Values[key] + "%";
+						el.innerHTML = Values[key] + " %";
+					}	
 				}	
 			}
 			// update rssi in Title element 
@@ -395,6 +410,7 @@ function OnPairRQ(){
 	var js = {"peerID": 99 , "DevID":99 , "DevType":99 ,  "value" : 99};
 	console.log(JSON.stringify(js));
 	webSocket.send(JSON.stringify(js));
+
 }
 
 function OnTest(){
@@ -427,7 +443,8 @@ function updateFile(){
 }
 
 function getGraphData(){
-	e = document.getElementById("logDate");
+	console.log("ici")
+	e = document.getElementById("dateInput");
 	console.log("date ");
 	console.log(e.value);
 	const m = e.value.split("-");
@@ -451,10 +468,7 @@ function generateChart(json, id, cols, names) {
 	//console.log("---in generateChart ----");
 	//console.log(JSON.stringify(json));
 	var chart = c3.generate({
-		size: {
-			width: 690,
-			height: 360
-			},
+	
 		layout:"fitData",
 		bindto: id,
 		data: {
@@ -509,4 +523,107 @@ function generateChart(json, id, cols, names) {
 				el = document.getElementById("wsStatus").innerHTML = "Closed";
 			};		
 		}
-	}    
+	}   
+	
+	// --------------------- Calender ----------------------------------------
+
+  const input = document.getElementById('dateInput');
+  const calendar = document.getElementById('calendar');
+  let currentDate = new Date();
+
+  input.addEventListener('click', () => {
+    calendar.classList.toggle('hidden');
+    buildCalendar(currentDate);
+  });
+  
+  function dateChanged(){
+	alert("changed");
+  }
+
+  function buildCalendar(date) {
+    calendar.innerHTML = ''; // Clear previous
+
+    const year = date.getFullYear();
+    const month = date.getMonth();
+
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+
+    // Header with navigation
+    const header = document.createElement('div');
+    header.classList.add('calendar-header');
+
+    const prevBtn = document.createElement('span');
+    prevBtn.textContent = '◀';
+    prevBtn.classList.add('nav-btn');
+    prevBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      currentDate = new Date(year, month - 1, 1);
+      buildCalendar(currentDate);
+    });
+
+    const nextBtn = document.createElement('span');
+    nextBtn.textContent = '▶';
+    nextBtn.classList.add('nav-btn');
+    nextBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      currentDate = new Date(year, month + 1, 1);
+      buildCalendar(currentDate);
+    });
+
+    const title = document.createElement('strong');
+    title.textContent = `${date.toLocaleString('default', { month: 'long' })} ${year}`;
+
+    header.appendChild(prevBtn);
+    header.appendChild(title);
+    header.appendChild(nextBtn);
+    calendar.appendChild(header);
+
+    // Table
+    const table = document.createElement('table');
+    const daysRow = document.createElement('tr');
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+    days.forEach(day => {
+      const th = document.createElement('th');
+      th.textContent = day;
+      daysRow.appendChild(th);
+    });
+    table.appendChild(daysRow);
+
+    let row = document.createElement('tr');
+    for (let i = 0; i < firstDay.getDay(); i++) {
+      row.appendChild(document.createElement('td')); // Empty cells
+    }
+
+    for (let d = 1; d <= lastDay.getDate(); d++) {
+      const cell = document.createElement('td');
+      cell.textContent = d;
+
+      cell.addEventListener('click', () => {
+        input.value = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+		getGraphData()
+		alert(input.value);
+        calendar.classList.add('hidden');
+      });
+
+      row.appendChild(cell);
+
+      if ((firstDay.getDay() + d) % 7 === 0) {
+        table.appendChild(row);
+        row = document.createElement('tr');
+      }
+    }
+
+    table.appendChild(row);
+    calendar.appendChild(table);
+  }
+
+  // Hide calendar when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.date-picker')) {
+      
+	  calendar.classList.add('hidden');
+	 // alert(input.value);
+    }
+  });

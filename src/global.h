@@ -10,10 +10,11 @@
 extern int chan;
 extern int pingTime;
 extern bool serverReset;
-extern SemaphoreHandle_t xSemaphore;
+//extern SemaphoreHandle_t xSemaphore;
+//extern SemaphoreHandle_t serialMutex;
 
 enum PairingStatus {PAIR_REQUEST, PAIR_REQUESTED, PAIR_PAIRED, };
-enum PeerType { THERMOSTAT, THERMOMETER, RELAY, };
+enum PeerType { THERMOSTAT, THERMOMETER, RELAY, LEVEL };
 enum MessageType { PAIRING, DATA, SETPOINTS, PING, RESET,};
 
 extern PeerType peerType;
@@ -24,7 +25,8 @@ extern int8_t rssi;
 typedef struct struct_ping
 {
   uint8_t msgType;
-  int msgID;
+  uint8_t PeerID;
+  uint32_t pingTime;
 } struct_ping;
 
 /*typedef struct struct_SP
@@ -39,6 +41,8 @@ typedef struct struct_reset
 {
   uint8_t msgType;
   uint8_t id;
+  uint8_t Channel;
+  bool channelChanged;
 } struct_reset;
 
 typedef struct struct_message
@@ -74,7 +78,7 @@ typedef struct struct_pairing
 
 extern struct_message incomingReadings;
 extern struct_message outgoingSetpoints;
-extern struct_message setpoints;
+extern struct_message setpoint;
 extern struct_pairing pairingData;
 extern struct_ping pingData;
 extern struct_reset pairReset;
@@ -112,5 +116,6 @@ extern std::map<std::string, std::string> SuffixToLogType_Map;
 extern std::map<std::string, std::string>::iterator SuffixToLogType_Map_it;
 
 extern SemaphoreHandle_t xSemaphore ;
+extern SemaphoreHandle_t serialMutex;
 
 #endif

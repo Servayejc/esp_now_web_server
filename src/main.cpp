@@ -17,32 +17,35 @@
 
 #include <flashLed.h>
 #include "Logger.h"
-#include "Config.h"
+#include <Config.h>
 #include "Svr.h"
 #include "global.h"
 #include "Utils.h"
 #include <DataBase.h>
 #include "version.h"
 #include "setup.h"
+#include <Preferences.h>
+#include "Utils.h"
 
+
+
+
+/* 
+credentials.h must be placed in a directory  ../Lib/  
+and contains the following code
+
+*/
 #define BitVal(data,y) ( (data>>y) & 1) 
-#define LED 2
 
 void setup()
 {
   doSetup();
+  //sendMessageToWhatsapp("VESTA Server restarted");
+  //sendLogJson();
 }
 
 void loop()
 { 
-  if (serverReset) {
-    Serial.println("Pairing Request");
-    pairReset.id = SERVER_ID;
-    pairReset.msgType = RESET;
-    esp_now_send(NULL, (uint8_t *) &pairReset, sizeof(pairReset));
-    serverReset = false;
-  } 
-  //processBlink();
   static unsigned long lastEventTime = millis();
   static const unsigned long EVENT_INTERVAL_MS = 5000;     
   if ((millis() - lastEventTime) > EVENT_INTERVAL_MS)
@@ -50,5 +53,11 @@ void loop()
     lastEventTime = millis();
     checkMem();
     LOG.processLogger();
+        
+    if(checkWiFiChannel() || serverReset){ 
+       
+      
+      ESP.restart();
+    }
   }
  }

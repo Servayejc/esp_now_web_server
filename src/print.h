@@ -1,7 +1,7 @@
 #ifndef PRINT_H_
 #define PRINT_H_
 
-#include <Utils.h>
+#include "Utils.h"
 #include <ArduinoJson.h>
 #include <global.h>
 #include <FS.h>
@@ -13,8 +13,10 @@
 void printPairingData();
 void printIncomingData();
 void printDeviceAddress(const uint8_t *device_addr);
+String macToString(const uint8_t *mac_addr);
 void printMAC(const uint8_t *mac_addr);
-void printlnMAC(const uint8_t *mac_addr);
+//void printlnMAC(const uint8_t *mac_addr);
 void printPeers(String raison);
+
 
 #endif

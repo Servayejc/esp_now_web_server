@@ -5,8 +5,70 @@
 #include <esp_now.h>
 #include <print.h>
 #include <DataBase.h>
+#include "Config.h"
+#include <Preferences.h>
+
 
 DataBase::DataBase(){};
+
+
+
+bool DataBase::addSetPoint(uint8_t PeerID, uint8_t DeviceID, uint8_t value){
+  char Key[10];
+  sprintf(Key, "%02d-%02d", PeerID, DeviceID);
+  SetPointEntry SP = {};
+  SP.PeerID = PeerID;
+  SP.DeviceID = DeviceID;
+  SP.SetPoint = value;
+  setpointsList.putBytes(Key, &SP, sizeof(SP));
+  //printSetPoints();
+  return true;
+}
+
+void DataBase::printSetPoints(){
+  char Key[10]; 
+  SetPointEntry SP = {}; 
+  safeSerialPrintf("List of setPoints \n"); 
+  for (int i = 0; i < DB.Peers.size(); i++) {
+    for (int j = 0; j < 12; j++){
+      sprintf(Key, "%02d-%02d", DB.Peers[i].PeerID, DB.Peers[i].deviceIds[j]);
+      if (setpointsList.isKey(Key)){
+        setpointsList.getBytes(Key, &SP, sizeof(SP));
+        safeSerialPrintf("%s = %d\n", &Key, SP.SetPoint);
+      }
+    }    
+  }
+  safeSerialPrintf("End of setPoints \n");  
+} 
+
+void DataBase::sendAllSetPoints(){
+  struct_message Setpoint;
+  char Key[10]; 
+  SetPointEntry SP = {}; 
+  for (int i = 0; i < DB.Peers.size(); i++) {
+    for (int j = 0; j < 12; j++){
+      sprintf(Key, "%02d-%02d", DB.Peers[i].PeerID, DB.Peers[i].deviceIds[j]);
+      if (setpointsList.isKey(Key)){
+        setpointsList.getBytes(Key, &SP, sizeof(SP));
+        safeSerialPrintf("%s = %d sended\n", &Key, SP.SetPoint);
+       
+       
+        Setpoint.msgType = SETPOINTS;
+        Setpoint.deviceId = SP.DeviceID;
+        Setpoint.deviceType = DB.getDeviceType(SP.PeerID, SP.DeviceID);
+        Setpoint.U1 = SP.SetPoint;
+        esp_err_t result = esp_now_send(DB.Peers[i].MAC, (uint8_t *)&Setpoint, sizeof(Setpoint));
+        if (result == ESP_OK) {
+          safeSerialPrintf("Setpoint sent successfully\n");
+        } else {
+          safeSerialPrintf("Error sending setpoint\n");
+        }
+      }
+    }    
+  }
+}
+
+
 
 bool DataBase::init(String structFileName, String peersFilename){
   if (fillDevices(structFileName)) {
@@ -55,100 +117,79 @@ uint8_t* DataBase::PeerIDtoMAC(uint8_t PeerID)
   return r;
 }
 
-bool DataBase::addPeerToESPNOW(const uint8_t *peer_addr){
- //printlnMAC(peer_addr);
-  //Serial.println(PeerID);
+bool DataBase::addPeerToESPNOW(const uint8_t *peer_addr, uint8_t peerID){
+ // safePrintlnMAC(peer_addr);
+  //safeSerialPrintf(PeerID);
   esp_now_peer_info_t peerInfo;
   memset(&peerInfo, 0, sizeof(peerInfo));
   const esp_now_peer_info_t *peer = &peerInfo;
-  esp_err_t getStatus = esp_now_get_peer(peer_addr, &peerInfo);
-  if (getStatus == ESP_OK)
-  {
-    #ifdef DEBUG_PAIRING
-        Serial.println("Already Paired");
-    #endif
-    if (peerInfo.channel != chan)
-    {                          // channel has changed
-      peerInfo.channel = chan; // set new channel
-      peerInfo.encrypt = 0;
-      esp_err_t modStatus = esp_now_mod_peer(peer); // modify existing peer
-      #ifdef DEBUG_PAIRING
-           if (modStatus == ESP_OK)
-            {
-              Serial.println("Modified success");
-            }
-            else
-            {
-              Serial.println("Modified failed");
-            }
-      #endif
-    }
-  }
-  if (!esp_now_is_peer_exist(peer_addr))
-  {
-    //Serial.println(getStatus);
-    peerInfo.channel = chan; // set channel
+ 
+    //safeSerialPrintf(getStatus);
+    esp_now_del_peer(peer_addr); // delete peer if already exists
+    peerInfo.channel = 0; // set channel
     peerInfo.encrypt = 0;
     memcpy(peerInfo.peer_addr, peer_addr, 6);     // set MAC address
     esp_err_t addStatus = esp_now_add_peer(peer); // add peer to ESP_NOW
     #ifdef DEBUG_PAIRING
         if (addStatus == ESP_OK)
         {
-          Serial.println("Pair success");
+          safeSerialPrintf("Pair success for PeerId %d, MAC ", peerID);
+          printMAC(peer_addr);
+          safeSerialPrintf("\n");
         }
         else
         {
-          Serial.println("Pair failed");
+          safeSerialPrintf("Pair failed\n");
         }
     #endif
-  }
+  //}
   //savePeers("addPeerToESPNOW");
   return true;
 }
 
 bool DataBase::addPeerToList(const uint8_t *mac_addr, int8_t PeerID){
   #ifdef DEBUG_PAIRING
-   // printLocalTime();
-    Serial.print("Add peer to list  PeerID : ");
-    Serial.println(PeerID);
-    //printlnMAC(mac_addr);
+    safeSerialPrintf("Add peer to list for PeerID %d \n", PeerID);
+    safeSerialPrintf("MAC Address: ");
+    printMAC(mac_addr);
+    safeSerialPrintf("\n");
   #endif  
   int ndx = -1;
   
   //#ifdef DEBUG_PAIRING
-   // Serial.print("Before Start Ndx : ");
-   // Serial.println(ndx);
-  //#endif  
+   // safeSerialPrintf("Before Start Ndx : ");
+   // safeSerialPrintf(ndx);
+  //#endif
 
   if (!Peers.empty())
   {
     for (int i = 0; i < Peers.size(); i++)
     { // search in list
-     // Serial.println(PeerID);
-     // Serial.println(Peers[i].PeerID);
+     // safeSerialPrintf(PeerID);
+     // safeSerialPrintf(Peers[i].PeerID);
       if (Peers[i].PeerID == PeerID) { //|| (isEqualMAC(mac_addr, Peers[i].MAC))) {
 		    ndx = i; // PeerID found, save entry index
-     //   Serial.print("PeerID Found, Index= ");
-     //   Serial.println(i);
+     //   safeSerialPrintf("PeerID Found, Index= ");
+     //   safeSerialPrintf(i);
         break;
 	    } 		
     }
   }
   //#ifdef DEBUG_PAIRING
-    //Serial.print("After search Ndx : ");
-    //Serial.println(ndx);
-  //#endif  
- 
+    //safeSerialPrintf("After search Ndx : ");
+    //safeSerialPrintf(ndx);
+  //#endif
+
   if (ndx < 0) // mac not found in the list
   {
     Peers.push_back(PeerEntry()); // add a new entry
     ndx = Peers.size() - 1;       // set entry index
-   // Serial.print("PeerID Added, Index = ");
-   // Serial.println(ndx);
+   // safeSerialPrintf("PeerID Added, Index = ");
+   // safeSerialPrintf(ndx);
   }
   //#ifdef DEBUG_PAIRING
-  //  Serial.print("Used Ndx : ");
-  //  Serial.println(ndx);
+  //  safeSerialPrintf("Used Ndx : ");
+  //  safeSerialPrintf(ndx);
   //#endif  
   Peers[ndx].PeerID = PeerID;
   Peers[ndx].Channel = chan;
@@ -156,14 +197,9 @@ bool DataBase::addPeerToList(const uint8_t *mac_addr, int8_t PeerID){
   
   fillPairingData(PeerID);
   
-  addPeerToESPNOW(mac_addr);
-  #ifdef DEBUG_PAIRING
-    printPeers("After Pairing");
-  #endif
-
+  addPeerToESPNOW(mac_addr, PeerID );
   //#ifndef SERVER_TEST
     savePeers("addPeerToList()");
-    //testPeers();
   //#endif 
   
   return true;
@@ -171,17 +207,17 @@ bool DataBase::addPeerToList(const uint8_t *mac_addr, int8_t PeerID){
 
 void DataBase::savePeers(String from){
 #ifdef DEBUG_SAVE_PEERS
-  Serial.print("-- Save peers from ");
-  Serial.println(from);
+    safeSerialPrintf("-- Save peers from ");
+  safeSerialPrintf(from);
 #endif
   File peersFile = LittleFS.open(peersFilename, "w", true);
   if (peersFile) 
   {
-    //Serial.println("PeersFile opened");
+    //safeSerialPrintf("PeersFile opened");
     StaticJsonDocument<2000> root;
     root["channel"] = WiFi.channel();
     JsonArray peers = root.createNestedArray("Peers");
-    //Serial.println(Peers.size());
+    //safeSerialPrintf(Peers.size());
     for (int i = 0; i < Peers.size(); i++)
     {
        //if (Peers[i].MAC[0] > 0) {
@@ -199,44 +235,49 @@ void DataBase::savePeers(String from){
         }
     }
     #ifdef DEBUG_SAVE_PEERS
-      Serial.println("Peer list saved");
+      safeSerialPrintf("Peer list saved");
       serializeJson(root, Serial);
-      Serial.println();
+      safeSerialPrintf();
     #endif
     serializeJson(root, peersFile);
     //Serial.println("From savePeers");
     //serializeJsonPretty(root, Serial);
     peersFile.close(); 
   } else {
-    Serial.println("Unable to create ");
-    Serial.println(peersFilename); 
+    safeSerialPrintf("Unable to create ");
+    safeSerialPrintf(peersFilename.c_str());
   }
 }
 
+void  DataBase::clearPeers(){
+  LittleFS.remove(peersFilename);
+  
+}
+
 bool DataBase::loadPeers(String peersFilename) {
-  //Serial.println(peersFilename);
+  //safeSerialPrintf(peersFilename);
 
   if (!LittleFS.exists(peersFilename)) {
     savePeers("loadPeers() create file");
     //#ifdef DEBUG_LOAD_PEERS
-        Serial.print(peersFilename);
-        Serial.println(" not found, new file created ");
+        safeSerialPrintf(peersFilename.c_str());
+        safeSerialPrintf(" not found, new file created ");
     //#endif 
   } else {
-    Serial.print("Loading Peers from ");
-    Serial.println(peersFilename);
+    safeSerialPrintf("Loading Peers from ");
+    safeSerialPrintf("%s\n",peersFilename.c_str());
         
     File peersFile = LittleFS.open(peersFilename, "r");
     StaticJsonDocument<2000> root;
     DeserializationError error = deserializeJson(root, peersFile);
     #ifdef DEBUG_LOAD_PEERS    
         serializeJson(root, Serial);
-        Serial.println();
+        safeSerialPrintf.println();
         printPeers("From loadPeers()");
     #endif    
 
-//    Serial.println((int)root["Peers"].size());
-//    Serial.println( Peers.size());
+//    safeSerialPrintf((int)root["Peers"].size());
+//    safeSerialPrintf(Peers.size());
 
 
 
@@ -249,7 +290,7 @@ bool DataBase::loadPeers(String peersFilename) {
             std::sscanf(macStr.c_str(), "%02x:%02x:%02x:%02x:%02x:%02x",
                  &mac[0], &mac[1], &mac[2], &mac[3], &mac[4], &mac[5]);
             
-            addPeerToESPNOW(mac);  // todo only if mac is not 00 00 00 00 00 00 
+            addPeerToESPNOW(mac, Peers[i].PeerID);   
             memcpy(Peers[i].MAC, mac, 6);
         }
       }
@@ -258,9 +299,9 @@ bool DataBase::loadPeers(String peersFilename) {
     savePeers("loadPeers()"); 
 
     #ifdef DEBUG_LOAD_PEERS
-        Serial.print(root["Peers"].size());
-        Serial.print(" peers updated from ");
-        Serial.println(peersFilename);
+        safeSerialPrintf(root["Peers"].size());
+        safeSerialPrintf(" peers updated from ");
+        safeSerialPrintf(peersFilename);
     #endif
   }
   return true;
@@ -271,17 +312,17 @@ bool DataBase::fillDevices(String fileName)
 {
 	uint8_t PID;
 	uint8_t DID;
-	
-	Serial.print("Fill devices from ");
-	Serial.println(fileName);
+
+	safeSerialPrintf("Fill devices from ");
+	safeSerialPrintf("%s\n", fileName.c_str());
 	StaticJsonDocument<2048> doc;
 	File dataFile = LittleFS.open(fileName);
   if (dataFile){
-		Serial.println("Config file Opened");
+		safeSerialPrintf("Config file Opened\n");
 		deserializeJson(doc, dataFile);
 		#ifdef DEBUG_DATA_STRUCTURE
-      Serial.println("loading DataStructure");
-    #endif  
+      safeSerialPrintf("loading DataStructure");
+    #endif
 		JsonArray P = doc["Peers"];
 		JsonArray DT = doc["DataTypes"];
 		char keyStr[30];
@@ -320,11 +361,11 @@ bool DataBase::fillDevices(String fileName)
       }
 		}
     dataFile.close();
-    Serial.println("Done");
+    safeSerialPrintf("Done");
     return true;
   } else {
-    Serial.print("Error reading ");
-    Serial.println(fileName);
+    safeSerialPrintf("Error reading ");
+    safeSerialPrintf(fileName.c_str());
     return false;
   } 
     
@@ -358,7 +399,7 @@ void DataBase::testPeers(){
         }
 
     }
-    Serial.println("From TestPeers");
+    safeSerialPrintf("From TestPeers");
     serializeJsonPretty(root,Serial);
 }
 
@@ -379,11 +420,9 @@ uint8_t DataBase::getDeviceType(uint8_t PeerID, uint8_t DeviceID){
 void DataBase::fillPairingData(uint8_t PeerID)
 { 
   #ifdef DEBUG_PAIRING
-    Serial.print("Fill pairing data for PeerID ");
-    Serial.print(PeerID);
-    Serial.println();
-  #endif 
-  
+    safeSerialPrintf("Fill pairing data for PeerID %d\n", PeerID);
+  #endif
+
   for (int i = 0; i < Peers.size(); i++)
   {
     if (Peers[i].PeerID == PeerID)
@@ -398,6 +437,21 @@ void DataBase::fillPairingData(uint8_t PeerID)
     }
   }
   #ifdef DEBUG_PAIRING
-    printPairingData();
+    //printPairingData();
   #endif  
 }
+
+void DataBase::printPeersFromFile() {
+    File peersFile = LittleFS.open(peersFilename, "r");
+    if (peersFile) {
+      StaticJsonDocument<2000> root;
+      DeserializationError error = deserializeJson(root, peersFile);
+      serializeJsonPretty(root, Serial);
+      safeSerialPrintf("\n");
+      peersFile.close();
+    } else {
+      safeSerialPrintf("Unable to open ");
+      safeSerialPrintf(peersFilename.c_str());
+    }
+  
+}  

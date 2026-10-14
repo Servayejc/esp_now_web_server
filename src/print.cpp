@@ -1,60 +1,43 @@
 #include <print.h>
+#include <Utils.h>
 
 void printIncomingData(){
-    Serial.print("msgType : ");
-    Serial.println(incomingReadings.msgType);
-    Serial.print("ID : ");
-    Serial.println(incomingReadings.deviceId);
-    Serial.print("DeviceType : ");
-    Serial.println(incomingReadings.deviceType);
-    Serial.print("F1 : ");
-    Serial.println(incomingReadings.F1);
-    Serial.print("F2 : ");
-    Serial.println(incomingReadings.F2);
-    Serial.print("U1 : ");
-    Serial.println(incomingReadings.U1);
-    Serial.print("U2 : ");
-    Serial.println(incomingReadings.U1);
-    Serial.println("-------------------");
+    safeSerialPrintf("msgType : %d\n ", incomingReadings.msgType);
+    safeSerialPrintf("ID : %d\n",incomingReadings.deviceId);
+    safeSerialPrintf("DeviceType : %d\n",incomingReadings.deviceType );
+    safeSerialPrintf("F1 : %d\n", incomingReadings.F1);
+    safeSerialPrintf("F2 : %d\n", incomingReadings.F2);
+    safeSerialPrintf("U1 : %d\n", incomingReadings.U1);
+    safeSerialPrintf("U2 : %d\n", incomingReadings.U1);
+    safeSerialPrintf("-------------------\n");
 }
 
 void printPairingData(){
-  Serial.print("msgType : "); 
-  Serial.println(pairingData.msgType);
-  Serial.print("netWork : "); 
-  Serial.println(pairingData.network);
-  Serial.print("macAddr : "); 
+  safeSerialPrintf("msgType : %d\n", pairingData.msgType); 
+  safeSerialPrintf("netWork : %d\n", pairingData.network); 
+  safeSerialPrintf("macAddr : "); 
   for(int i = 0; i < 6; i++){
-      Serial.print(pairingData.macAddr[i]);
-      Serial.print(", ");
+    safeSerialPrintf("%02X:", pairingData.macAddr[i]);  
   } 
-  Serial.println();
- 
-  Serial.print("Channel : ");
-  Serial.println(pairingData.channel);
-   
-  Serial.print("deviceId : ");
+  safeSerialPrintf("\n");
+  safeSerialPrintf("Channel : %d\n",pairingData.channel);
+  safeSerialPrintf("deviceId : ");
   for(int i = 0; i < 12; i++){
-      Serial.print(pairingData.deviceIds[i]);
-      Serial.print(", ");
+      safeSerialPrintf("%d ,",pairingData.deviceIds[i]);
   } 
-  Serial.println(); 
+  safeSerialPrintf("\n"); 
 
-  Serial.print("deviceTypes : ");  
+  safeSerialPrintf("deviceTypes : ");  
   for(int i = 0; i < 12; i++){
-      Serial.print(pairingData.deviceTypes[i]);
-      Serial.print(", ");
+      safeSerialPrintf("%d ,",pairingData.deviceTypes[i]);
   } 
-  Serial.println();
+  safeSerialPrintf("\n");
  
-  Serial.print("controlNdx : ");
+  safeSerialPrintf("controlNdx : ");
   for(int i = 0; i < 12; i++){
-      Serial.print(pairingData.controlNdx[i]);
-      Serial.print(", ");
+      safeSerialPrintf("%d ,",pairingData.controlNdx[i]);
   } 
-  Serial.println();
-  
-  Serial.println("");
+  safeSerialPrintf("\n\n");
 }
 
 void printDeviceAddress(const uint8_t *device_addr)
@@ -62,7 +45,14 @@ void printDeviceAddress(const uint8_t *device_addr)
   char deviceStr[30];
   snprintf(deviceStr, sizeof(deviceStr), "%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x",
            device_addr[0], device_addr[1],device_addr[2], device_addr[3], device_addr[4], device_addr[5], device_addr[6], device_addr[7]);
-  Serial.println(deviceStr);
+  safeSerialPrintf(deviceStr);
+}
+
+String macToString(const uint8_t *mac_addr){
+  char macStr[18];
+    snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x",
+           mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
+  return macStr;         
 }
 
 void printMAC(const uint8_t *mac_addr)
@@ -70,57 +60,53 @@ void printMAC(const uint8_t *mac_addr)
   char macStr[18];
   snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x",
            mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
-  Serial.print(macStr);
+  safeSerialPrintf("%s", macStr);
 }
 
-void printlnMAC(const uint8_t *mac_addr)
+/*void printlnMAC(const uint8_t *mac_addr)
 {
-  printMAC(mac_addr);
-  Serial.println();
-}
+   safeSerialPrintf("%s\n",mac_addr);
+}*/
 
 void printPeer(uint8_t ndx, bool full = false)
 {
-  Serial.println(ndx);
-  Serial.print("     PeerID :");
-  Serial.println(Peers[ndx].PeerID);
-  Serial.print("        MAC : ");
-  printlnMAC(Peers[ndx].MAC);
-  Serial.print("    Channel :");
-  Serial.println(Peers[ndx].Channel);
+  safeSerialPrintf("",ndx);
+  safeSerialPrintf("     PeerID :%d\n",Peers[ndx].PeerID);
+  safeSerialPrintf("        MAC :%d\n ",Peers[ndx].MAC);
+  safeSerialPrintf("    Channel :%d\n",Peers[ndx].Channel);
+
   if (full){
-    Serial.print("  DeviceIDs : ");
+    safeSerialPrintf("  DeviceIDs : ");
     for (int j = 0; j < 12; j++)
     {
-      Serial.print(Peers[ndx].deviceIds[j]);
-      Serial.print(", ");
+      safeSerialPrintf(", %d",Peers[ndx].deviceIds[j]);
     }
-    Serial.println();
-    Serial.print("DeviceTypes : ");
+    safeSerialPrintf("\n");
+    
+    safeSerialPrintf("DeviceTypes : ");
     for (int j = 0; j < 12; j++)
     {
-      Serial.print(Peers[ndx].deviceTypes[j]);
-      Serial.print(", ");
+      safeSerialPrintf(", %d",Peers[ndx].deviceTypes[j]);
     }
-     Serial.println();
-    Serial.print("ControlNdx : ");
+    safeSerialPrintf("\n");
+    
+    safeSerialPrintf("ControlNdx : ");
     for (int j = 0; j < 12; j++)
     {
-      Serial.print(Peers[ndx].controlIds[j]);
-      Serial.print(", ");
+      safeSerialPrintf(", %d",Peers[ndx].controlIds[j]);
     }
+    safeSerialPrintf("\n");
   }
-  Serial.println();
-  Serial.println("-------------");
+  safeSerialPrintf("-------------");
 }
 
 void printPeers(String raison)
 {
-  Serial.print("==== Peers List ==== ");
-  Serial.println(raison);
+  safeSerialPrintf("==== Peers List ====  from %s ", raison);
+  
   for (int i = 0; i < Peers.size(); i++)
   {
     printPeer(i, false);
   }
-  Serial.println("==== End of Peers List ====");
+  safeSerialPrintf("==== End of Peers List ====\n");
 }

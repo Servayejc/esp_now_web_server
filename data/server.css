@@ -1,13 +1,15 @@
 
     html {font-family: Arial; display: inline-block; text-align: center;}
     p {  font-size: 1.2rem;}
-	  input {height:20px; border-width:1px; border-radius:4px; font-size:1em;	text-align: left;}
+	  input {height:20px;  font-size:1em;	text-align: left;}
     body { margin: 0;}
     
     .topnav { overflow: hidden; background-color: #2f4468; color: white; font-size: 1.7rem; }
+	  .header{display:flex; align-items: center;justify-content: center;}
     .content { padding: 20px; }
-    .cards { max-width: 700px; margin: 0 auto; display: grid; grid-gap: 2rem; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
-    .card { background-color: white; box-shadow: 2px 2px 12px 1px rgba(140,140,140,.5); }
+    .cards { margin: 0 auto; display: grid; grid-gap: 2rem; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+    .card { background-color: white; border-style:solid; box-shadow: 2px 2px 12px 1px rgba(140,140,140,.5);}
+    
     .reading { font-size: 2.8rem; }
     .setpoint {font-size: 1.4rem; }
 	  .packet { color: #bebebe; }
@@ -15,7 +17,7 @@
     .card.humidity { color: #1b78e2; }
     .card.thermostat { color: #fd7e14; }
     .grayed  { background-color: #585857; }
-    .chart { background-color: #f7f7f7; display: flex; padding-right:15px; box-shadow: 2px 2px 12px 1px rgba(140,140,140,.5); grid-column-start: 1; grid-column-end: span 2;}
+    .chart { background-color: #f7f7f7; display: flex; padding-right:15px; border-style:solid;margin:10px;}
      
 	
     .status{background-color:green; margin-left:4px; margin-right:4px; border:2px; width:40px;  height:20px; border:1px;}
@@ -71,6 +73,9 @@
         100% { box-shadow: 2px 2px 12px 1px rgba(116, 116, 116, 0.996);}
       } 
 
+
+
+
       input:checked + .slider {
         background-color: #2196F3;
       }
@@ -93,3 +98,165 @@
       .slider.round:before {
         border-radius: 50%;
       }
+
+      .date-picker {
+    position: relative;
+    display: inline-block;
+	padding-bottom: 5px;
+  }
+
+  input {
+    width: 200px;
+    cursor: pointer;
+  }
+
+  .calendar {
+    position: absolute;
+    top: 45px;
+    left: 0;
+    background: white;
+    border: 1px solid #ccc;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    padding: 10px;
+    border-radius: 6px;
+    z-index: 10;
+  }
+
+  .hidden {
+    display: none;
+  }
+
+  .calendar table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  .calendar th, .calendar td {
+    text-align: center;
+    padding: 5px;
+    cursor: pointer;
+  }
+
+  .calendar th {
+    background-color: #f5f5f5;
+  }
+
+  .calendar td:hover {
+    background-color: #e6f7ff;
+    border-radius: 4px;
+  }
+
+  .calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+  }
+
+  .nav-btn {
+    cursor: pointer;
+    font-weight: bold;
+    padding: 5px 8px;
+    border-radius: 4px;
+  }
+
+  .nav-btn:hover {
+    background-color: #f0f0f0;
+  }
+  
+  .menu {
+    display: flex;
+	justify-content: center;
+	background-color: #2f4468; 
+  }.date-picker {
+    position: relative;
+    display: inline-block;
+	padding-bottom: 5px;
+  }
+
+  input {
+    width: 200px;
+    cursor: pointer;
+  }
+
+  .calendar {
+    position: absolute;
+    top: 45px;
+    left: 0;
+    background: white;
+    border: 1px solid #ccc;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    padding: 10px;
+    border-radius: 6px;
+    z-index: 10;
+  }
+
+  .hidden {
+    display: none;
+  }
+
+  .calendar table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  .calendar th, .calendar td {
+    text-align: center;
+    padding: 5px;
+    cursor: pointer;
+  }
+
+  .calendar th {
+    background-color: #f5f5f5;
+  }
+
+  .calendar td:hover {
+    background-color: #e6f7ff;
+    border-radius: 4px;
+  }
+
+  .calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+  }
+
+  .nav-btn {
+    cursor: pointer;
+    font-weight: bold;
+    padding: 5px 8px;
+    border-radius: 4px;
+  }
+
+  .nav-btn:hover {
+    background-color: #f0f0f0;
+  }
+  
+  .menu {
+    display: flex;
+	justify-content: center;
+	background-color: #2f4468; 
+  }
+
+  	.progress-container {
+      width: 300px;
+      height: 30px;
+      background-color: #ddd;
+      border-radius: 20px;
+      overflow: hidden;
+	  margin: 0 auto;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background-color: #4caf50;
+      text-align: center;
+      line-height: 30px;
+      color: white;
+      transition: width 0.3s ease;
+    }
+
+
+}

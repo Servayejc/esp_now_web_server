@@ -7,3 +7,12 @@ G
 .bak
 logs
 test
+
+
+# Ignore kluster.ai Verify Code rules
+.github/instructions/kluster-code-verify.instructions.md
+
+
+.kluster
+
+.bevel/do_not_share

@@ -30,27 +30,52 @@ void Logger::printTime()
   struct tm timeinfo;
   if (!getLocalTime(&timeinfo))
   {
-    Serial.println("Failed to get time");
+    safeSerialPrintf("Failed to get time\n");
     return;
   }
-  Serial.println(&timeinfo, "%y-%m-%d %H:%M:%S");
+  timeinfo.tm_year += 1900;
+  safeSerialPrintf("%04d-%02d-%02d %02d:%02d:%02d\n", timeinfo.tm_year, timeinfo.tm_mon + 1, timeinfo.tm_mday, timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
 }
 
 bool Logger::checkSD(){
-  Serial.println(SD.cardType());
-  if (SD.cardType() != CARD_NONE){
-    return true;
-  } else {
-    Serial.println("SD card is NOT present");
+   bool status = false;
+   if(!xSemaphoreTake( xSemaphore, (400 * portTICK_PERIOD_MS) == pdTRUE)){
+      return false;
+   } 
+   #ifdef SD_DEBUG
+      safeSerialPrintf("xSemaphoreTake by checkSD\n"); 
+   #endif
+  
+   if (SD.cardType() != CARD_NONE){
+     status = true;
+     showDebug(true);
+   } else {
+      showDebug(true);
+    #ifdef SD_DEBUG  
+      safeSerialPrintf("SD card is NOT present\n");
+    #endif
     initSD();
     if (SDPresent){
-      Serial.println("SD card re-initialized");
-      return true;
+      #ifdef SD_DEBUG
+        safeSerialPrintf("SD card re-initialized\n");
+      #endif
+      status = true;
+        showDebug(true);
+
     } else { 
-      Serial.println("SD card is NOT re-initialized");
-      return false;
+      #ifdef SD_DEBUG 
+        safeSerialPrintf("SD card is NOT re-initialized\n");
+      #endif
+        status = false;
+        showDebug(false);
+
     } 
-  }     
+  }
+  xSemaphoreGive(xSemaphore);
+  #ifdef SD_DEBUG
+    safeSerialPrintf("xSemaphoreGive by checkSD\n");
+  #endif
+  return status;
 }
 
 void Logger::powerOn(uint8_t pin){
@@ -70,34 +95,34 @@ void Logger::initSD()
   pinMode(CS, OUTPUT);
   powerOff(4);
   // reset SD Card by power 
-  Serial.println("SD NOT POWERD");
+  safeSerialPrintf("SD NOT POWERD\n");
   delay(1000);
   powerOn(4);
   delay(1000);
-  Serial.println("SD POWERD");
+  safeSerialPrintf("SD POWERD\n");
   //
   SPI.end();
   SPI.begin(18, 19, 23, CS);   // SPI.begin(18, 36, 26, CS); ???
   if (SD.begin(CS)) {
-    Serial.println("SD Mounted");
+    safeSerialPrintf("SD Mounted\n");
     SDPresent = true;
   } else {
-    Serial.println("An Error has occurred while mounting SD"); 
+    safeSerialPrintf("An Error has occurred while mounting SD\n");
   }
   #ifndef SERVER_TEST
     if (!SDPresent) { 
-      showError(13);
+    //  showError(13);
     }
   #endif
   #ifdef DEBUG_FS
-    Serial.print("Card Type : ");
-    Serial.println(SD.cardType());
-    Serial.print("SD Mounted Total: ");
-    Serial.print(SD.totalBytes()/1024);
-    Serial.print(" Used: ");
-    Serial.print(SD.usedBytes()/1024);
-    Serial.println(" bytes");  
-  #endif 
+    safeSerialPrintf("Card Type : ");
+    safeSerialPrintf("%d\n", SD.cardType());
+    safeSerialPrintf("SD Mounted Total: ");
+    safeSerialPrintf("%d\n", SD.totalBytes()/1024);
+    safeSerialPrintf(" Used: ");
+    safeSerialPrintf("%d\n", SD.usedBytes()/1024);
+    safeSerialPrintf(" bytes\n");
+  #endif
 }
 
 bool Logger::isPresent(){
@@ -123,24 +148,24 @@ bool Logger::createNewFile(String fileName, String Data){
   File dataFile;
 
   #ifdef DEBUG_LOGGER
-    Serial.print("Create new data file:  ");
-    Serial.println(fileName);
-    Serial.println(Data);
+    safeSerialPrintf("Create new data file:  ");
+    safeSerialPrintf("%s\n", fileName.c_str());
+    safeSerialPrintf("%s\n", Data.c_str());
   #endif
   if (SDPresent) {
     dataFile = SD.open(fileName, "w");
     #ifdef DEBUG_LOGGER
-      Serial.println("SD");
+      safeSerialPrintf("SD\n");
     #endif
   }else{
     dataFile = LittleFS.open(fileName, "w");
     #ifdef DEBUG_LOGGER
-      Serial.println("LittleFS"); 
+      safeSerialPrintf("LittleFS\n");
     #endif
   }
   // add JSON structure to new file
   if (dataFile) {
-      Serial.println(dataFile.name());
+      safeSerialPrintf("%s\n", dataFile.name());
       dataFile.print("{\"Data\":[");
       dataFile.println();
       dataFile.print(Data);
@@ -150,16 +175,14 @@ bool Logger::createNewFile(String fileName, String Data){
       dataFile.close();
       result = true;
       #ifdef DEBUG_LOGGER
-        Serial.println("Data added to new file"); 
-      #endif  
+        safeSerialPrintf("Data added to new file\n");
+      #endif
   }
-  
-  //printFile(fileName);
-  //Serial.println(dataFile.size());
   return result;
 }  
 
 bool Logger::saveOnSD(String fileName, String Data) {
+
   bool result = false;
   File dataFile;
   
@@ -174,27 +197,26 @@ bool Logger::saveOnSD(String fileName, String Data) {
     return true;
   } 
   #ifdef DEBUG_LOGGER
-    Serial.println(Data);
-    Serial.println("Data file already exists");
+    safeSerialPrintf("%s\n", Data.c_str());
+    safeSerialPrintf("Data file already exists\n");
   #endif
   // do not use "a" or "a+"" because seek don't work in this mode
   if (SDPresent) {
     dataFile = SD.open(fileName, "r+");
     #ifdef DEBUG_LOGGER
-      Serial.println("SD PRESENT");
+      safeSerialPrintf("SD PRESENT\n");
     #endif 
   }else{  
     dataFile = LittleFS.open(fileName, "r+");
     #ifdef DEBUG_LOGGER
-      Serial.println("LittleFS PRESENT"); 
+      safeSerialPrintf("LittleFS PRESENT\n"); 
     #endif  
   } 
   
   if (dataFile) {
-    Serial.println(dataFile.name());
+    safeSerialPrintf("%s\n", dataFile.name());
     // erase "]}" at the end of the file
-    Serial.println("Data file is opened ");
-    //Serial.println(dataFile.size());
+    safeSerialPrintf("Data file is opened\n");
     dataFile.seek(dataFile.size() - 4); 
     // append data
     dataFile.println(",");
@@ -203,20 +225,19 @@ bool Logger::saveOnSD(String fileName, String Data) {
     // rewrite closing "]}"
     dataFile.print("]}");
     dataFile.flush();
-    //Serial.println(dataFile.size());
     dataFile.close();
     result = true;
     
     #ifdef DEBUG_LOGGER
-      Serial.println("Data added to existing file");
-      Serial.println(Data);
+      safeSerialPrintf("Data added to existing file\n");
+      safeSerialPrintf("%s\n", Data.c_str());
     #endif
   } else {
     #ifdef DEBUG_LOGGER
-      Serial.println("Can not open existing file!");
-    #endif  
+      safeSerialPrintf("Can not open existing file!\n");
+    #endif
   }
-  Serial.println("saveOnSD return TRUE");
+  safeSerialPrintf("saveOnSD return TRUE\n");
  // printFile(fileName);
   return result; 
 }
@@ -224,18 +245,22 @@ bool Logger::saveOnSD(String fileName, String Data) {
 void Logger::createFileName(){
 // File name is based on Local Time 
   tm timeinfo;
+  safeSerialPrintf("before getLocalTime\n");
   getLocalTime(&timeinfo);
+  safeSerialPrintf("after getLocalTime\n");
+
   #ifdef DEBUG_LOGGER
-    Serial.println("Create FileName");    
+    safeSerialPrintf("Create FileName\n");
   #endif
   sprintf(fileName, "/%04d_%02d_%02d.JSN", 1900+timeinfo.tm_year, timeinfo.tm_mon + 1, timeinfo.tm_mday);
   #ifdef DEBUG_LOGGER
-    Serial.println(fileName); 
+    safeSerialPrintf("%s\n", fileName);
   #endif
 }
 
 
 bool Logger::prepareData(){
+  safeSerialPrintf("Create FileName\n");
   createFileName();
   tm timeinfo;
   // data are based to UTC
@@ -245,6 +270,7 @@ bool Logger::prepareData(){
   #endif
   sprintf(utc, "%04d-%02d-%02dT%02d:%02d:%02d", 1900+timeinfo.tm_year, timeinfo.tm_mon+1, timeinfo.tm_mday, timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec); // UTC time
  // Prepare json
+  safeSerialPrintf("CreateJson\n"); 
   StaticJsonDocument<2000> root;
   root["ID"] = "ESP8266";
   root["UID"] = utc;
@@ -263,11 +289,11 @@ bool Logger::prepareData(){
       it->second.N = 0;
     }  
   }
+  safeSerialPrintf("Json document created\n");
   if (hasData) { // at least one data present
     #ifdef DEBUG_LOGGER
-      Serial.print("Logger has data");
-      Serial.println();
-    #endif  
+      safeSerialPrintf("Logger has data\n");
+    #endif
     serializeJson(root, payload);
   } 
   return (payload[0] != '\0'); 
@@ -281,9 +307,8 @@ bool Logger::logData(){
     char utc[25];
     sprintf(utc, "%04d-%02d-%02dT%02d:%02d:%02d", 1900+LocalTimeinfo.tm_year, LocalTimeinfo.tm_mon+1, LocalTimeinfo.tm_mday, LocalTimeinfo.tm_hour,  LocalTimeinfo.tm_min, LocalTimeinfo.tm_sec); // UTC time
     #ifdef DEBUG_LOGGER
-      Serial.println("[processLogger] Data saved on SD");
-      Serial.print("[processLogger] Logged at local time  ");
-      Serial.println(utc);
+      safeSerialPrintf("Data saved on SD\n");
+      safeSerialPrintf("Logged at local time  %s\n", utc);
     #endif
     return true; 
   } else {
@@ -293,8 +318,7 @@ bool Logger::logData(){
 
 
 void Logger::processLogger() {
-	checkSD();
-
+  checkSD();
   struct tm LocalTimeinfo;
 	getLocalTime(&LocalTimeinfo);
 	if (LocalTimeinfo.tm_min % 15 == 0){
@@ -302,19 +326,20 @@ void Logger::processLogger() {
       //printLocalTime();
       if (prepareData()) {
 				if( xSemaphoreTake( xSemaphore, (400 * portTICK_PERIOD_MS) == pdTRUE)){
-					Serial.println("get xSemaphoreTake by Logger");
+					safeSerialPrintf("xSemaphoreTake by Logger\n");
 					if (logData()) {
 						logged = true;
 					}
-					xSemaphoreGive(xSemaphore); 
-					Serial.println("xSemaphoreGive by Logger");
+					xSemaphoreGive(xSemaphore);
+          safeSerialPrintf("xSemaphoreGive by Logger\n"); 
+          
 					} else{ 
-					Serial.println(" Unable to take xSemaphore");
+					safeSerialPrintf("Unable to take xSemaphore\n");
 					logged = false;
 				} 
 			}
 			else {
-				Serial.println("No Data available");
+				safeSerialPrintf("No Data available\n");
 				logged = false;
 			}	
 		}  
@@ -323,6 +348,18 @@ void Logger::processLogger() {
 	}  
 }  
 
+/*
+getLocalTime(&timeinfo);
+sprintf(fileName, "/%04d_%02d_%02d.JSN", 1900+timeinfo.tm_year, timeinfo.tm_mon + 1, timeinfo.tm_mday);
+
+getUtcTime(&timeinfo);
+sprintf(utc, "%04d-%02d-%02dT%02d:%02d:%02d", 1900+timeinfo.tm_year, timeinfo.tm_mon+1, timeinfo.tm_mday, timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec); // UTC time
+ // Prepare json
+ 
+
+
+
+*/
 
     
 
