@@ -1,0 +1,323 @@
+{
+  "uuid": "473fef1be0174987c9c9b2011e54f6cd",
+  "path": "Offline/ALL%20ESP%20PROJECTS",
+  "name": "ALL ESP PROJECTS",
+  "content": "",
+  "created_at": "2026-07-09 13:34:18",
+  "updated_at": "2026-07-09 13:34:18",
+  "stick": "",
+  "documents": [
+    {
+      "uuid": "8d85c0821feeb85137cb8c03b68716a9",
+      "title": "Sheet_1",
+      "description": "",
+      "docType": "1",
+      "master": "",
+      "thumb": "/images/thumb-default.png",
+      "components": {
+        "76c0528ae10747d08163e3a5ebf7f17d": 2,
+        "7adc413fe4d0c11c85ba64a2e716471f": 2,
+        "9940cd627ec14d7fb3f12f19efe9e54c": 1,
+        "3bed0e896e0840d08515fd51b38565b9": 7,
+        "805c79bf20064baa8c2ddfd25abe26df": 1,
+        "a3c514601fe440438f880e2b548d2f4c": 3,
+        "09f046bf033f47c39225797e1e6c9650": 1,
+        "67082a4ee642ac71e2dcdf6758d8dd66": 1,
+        "7673f34f99c1428db8c9a80b816cae35": 1,
+        "689d56c7c0f0ca939a43e308a10eb25d": 1,
+        "0c2f92f5f8e744bd8a3f05a05d879665": 1,
+        "e545f26e87c74952857381bd0bff848e": 3,
+        "24eeb2ceca08480b92b847b6a310acda": 1,
+        "fce603be68ac42978be608a9f032313f": 1,
+        "57b01e8ec4a14c74b6436f30a3324021": 1,
+        "1a7cabc67da24bbda9b7b7db14c6a01c": 1,
+        "ca157d4542ac4b4db57c2f6cfaa46126": 1,
+        "b0248eb51e084227889f2cb84eab79c4": 1,
+        "a7291ceaee5442a999df26c55c7e675d": 1
+      },
+      "BOM": [
+        [
+          "Value",
+          "Quantity",
+          "Package",
+          "Components",
+          "CustomPara"
+        ],
+        [
+          "4.5v",
+          1,
+          "BAT-SMD_CR1220-2",
+          "B1",
+          {
+            "Manufacturer Part": "CR1220-2",
+            "Manufacturer": "Q&J",
+            "Supplier": "LCSC",
+            "Supplier Part": "C70381"
+          }
+        ],
+        [
+          "4.7uF",
+          2,
+          "CAP-TH_BD5.0-P2.5-D0.5-FD",
+          "C1,C2",
+          {
+            "Manufacturer Part": "TAP475K050SCS",
+            "Manufacturer": "Kyocera AVX",
+            "Supplier": "LCSC",
+            "Supplier Part": "C46604"
+          }
+        ],
+        [
+          "1u",
+          2,
+          "CASE-A_3216",
+          "C3,C4",
+          {
+            "Manufacturer Part": "",
+            "Manufacturer": "",
+            "Supplier": "",
+            "Supplier Part": ""
+          }
+        ],
+        [
+          "10 pf",
+          1,
+          "C0603",
+          "C5",
+          {
+            "Manufacturer Part": "",
+            "Manufacturer": "",
+            "Supplier": "",
+            "Supplier Part": ""
+          }
+        ],
+        [
+          "470uF",
+          1,
+          "CASE-A_3216",
+          "C6",
+          {
+            "Manufacturer Part": "",
+            "Manufacturer": "",
+            "Supplier": "",
+            "Supplier Part": ""
+          }
+        ],
+        [
+          "BAT43",
+          1,
+          "SOD-323_L1.8-W1.3-LS2.5-RD",
+          "D1",
+          {
+            "Manufacturer Part": "BAT43WS S8",
+            "Manufacturer": "CJ(江苏长电/长晶)",
+            "Supplier": "LCSC",
+            "Supplier Part": "C22633"
+          }
+        ],
+        [
+          "DS18B20+T&R",
+          1,
+          "TO-92-3_L4.9-W3.7-P2.54-L",
+          "DS18B20",
+          {
+            "Manufacturer Part": "DS18B20+T&R",
+            "Manufacturer": "ADI(亚德诺)/MAXIM(美信)",
+            "Supplier": "LCSC",
+            "Supplier Part": "C880672"
+          }
+        ],
+        [
+          "HDR-TH-8PFV-P2.54_L",
+          2,
+          "HDR-TH_8P-P2.54-V-F-1",
+          "H1,H2",
+          {
+            "Manufacturer Part": "22850108ANG1SYA01",
+            "Manufacturer": "JILN",
+            "Supplier": "LCSC",
+            "Supplier Part": "C429957"
+          }
+        ],
+        [
+          "HDR-F-2.54_1x3",
+          1,
+          "HDR-F-2.54_1X3",
+          "H3",
+          {
+            "Manufacturer Part": "",
+            "Manufacturer": "",
+            "Supplier": "LCSC",
+            "Supplier Part": "C146690"
+          }
+        ],
+        [
+          "MICRO SD CARD",
+          1,
+          "1X08_PIN1_NO_SILK",
+          "JP1",
+          {
+            "Manufacturer Part": "",
+            "Manufacturer": "",
+            "Supplier": "",
+            "Supplier Part": ""
+          }
+        ],
+        [
+          "4k7",
+          1,
+          "R0603",
+          "R1",
+          {
+            "Manufacturer Part": "",
+            "Manufacturer": "",
+            "Supplier": "",
+            "Supplier Part": ""
+          }
+        ],
+        [
+          "10K",
+          6,
+          "0.25W-RESISTOR-VERTICAL",
+          "R1,R2,R3,R4,R5,R6",
+          {
+            "Manufacturer Part": "1/4W resistor-vertical",
+            "Manufacturer": "",
+            "Supplier": "",
+            "Supplier Part": "undefined"
+          }
+        ],
+        [
+          "4K7",
+          1,
+          "0.25W-RESISTOR-VERTICAL",
+          "R7",
+          {
+            "Manufacturer Part": "1/4W resistor-vertical",
+            "Manufacturer": "",
+            "Supplier": "",
+            "Supplier Part": "undefined"
+          }
+        ],
+        [
+          "ESP12F",
+          1,
+          "ESP12F-SMD",
+          "U1",
+          {
+            "Manufacturer Part": "",
+            "Manufacturer": "",
+            "Supplier": "",
+            "Supplier Part": ""
+          }
+        ],
+        [
+          "NODEMCU(12F)",
+          1,
+          "COMM-TH_NODEMCU-12F",
+          "U1",
+          {
+            "Manufacturer Part": "NODEMCU(12F)",
+            "Manufacturer": "Ai-Thinker(安信可)",
+            "Supplier": "LCSC",
+            "Supplier Part": "C2764098"
+          }
+        ],
+        [
+          "MCP1702_TO",
+          1,
+          "TO92_3",
+          "U2",
+          {
+            "Manufacturer Part": "",
+            "Manufacturer": "",
+            "Supplier": "",
+            "Supplier Part": ""
+          }
+        ],
+        [
+          "TC1263 3.3v",
+          1,
+          "1X05_NO_SILK",
+          "U2",
+          {
+            "Manufacturer Part": "",
+            "Manufacturer": "",
+            "Supplier": "",
+            "Supplier Part": ""
+          }
+        ],
+        [
+          "LVL CONV",
+          1,
+          "MPN-TH-20_L28.0-W14.0-P2.54-BL",
+          "U3",
+          {
+            "Manufacturer Part": "Level Converter 8",
+            "Manufacturer": "null",
+            "Supplier": "LCSC",
+            "Supplier Part": "C2829587"
+          }
+        ],
+        [
+          "DS18B20",
+          2,
+          "TO-92-3_L4.9-W3.7-P2.54-L",
+          "U3,U4",
+          {
+            "Manufacturer Part": "DS18B20+T&R",
+            "Manufacturer": "ADI(亚德诺)/MAXIM(美信)",
+            "Supplier": "LCSC",
+            "Supplier Part": "C880672"
+          }
+        ],
+        [
+          "DS18B20+",
+          1,
+          "TO-92-3_L4.9-W3.7-P1.27-L",
+          "U5",
+          {
+            "Manufacturer Part": "DS18B20+",
+            "Manufacturer": "ADI(亚德诺)/MAXIM(美信)",
+            "Supplier": "LCSC",
+            "Supplier Part": "C9753"
+          }
+        ],
+        [
+          "PCF8574",
+          1,
+          "PDIP-16_L19.3-W6.4-P2.54-LS7.94-BL",
+          "U6",
+          {
+            "Manufacturer Part": "PCF8574ANE4",
+            "Manufacturer": "TI(德州仪器)",
+            "Supplier": "LCSC",
+            "Supplier Part": "C20345617"
+          }
+        ],
+        [
+          "ESP32",
+          1,
+          "BULETM-SMD_ESP32-DEVKITC",
+          "U7",
+          {
+            "Manufacturer Part": "ESP32-DevKitC",
+            "Manufacturer": "ESPRESSIF(乐鑫)",
+            "Supplier": "LCSC",
+            "Supplier Part": "C571180"
+          }
+        ]
+      ],
+      "updateTime": 1783618458,
+      "createTime": 1783618458,
+      "histories": [],
+      "created_at": "2026-07-09 13:34:18",
+      "updated_at": "2026-07-09 13:34:18"
+    }
+  ],
+  "sort": [],
+  "title": "ALL ESP PROJECTS",
+  "foldername": "ALL ESP PROJECTS",
+  "schfilename": "ALL ESP PROJECTS.json",
+  "schfilemtime": 1783618458402
+}
