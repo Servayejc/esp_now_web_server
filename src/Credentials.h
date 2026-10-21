@@ -14,7 +14,7 @@ static const char *key = "WATSAP_KEY";
 
 // gmail
 #define SMTP_HOST "SMTP_HOST"
-#define SMTP_PORT "SMTP_PORT"
+#define SMTP_PORT 448
 #define AUTHOR_EMAIL "YOUR_EMAIL"
 #define AUTHOR_PASS  "YOUR PASSWORD"
 #define RECIPIENT_EMAIL "RECIPIENT_EMAIL"
